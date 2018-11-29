@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="./cropped-5G-Transformer_short.jpg">
+
+    <title>Transformer OAM</title>
+
+	<!-- Bootstrap core CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <!-- Custom styles for this template -->
+    <link href="floating-labels.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <form class="form-signin">
+      <div class="text-center mb-4">
+        <img class="mb-4" src="./cropped-5G-Transformer_short.jpg" alt="" width="300" height="150">
+        <h1 class="h3 mb-3 font-weight-normal">Transformer OAM</h1>
+      </div>
+
+      <div class="form-label-group">
+        <input id="input_tenant" class="form-control" placeholder="tenant1" required autofocus>
+        <label for="input_tenant">Tenant ID</label>
+      </div>
+
+      <div class="form-label-group">
+        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+        <label for="inputPassword">Password</label>
+      </div>
+
+      <div class="checkbox mb-3">
+        <label>
+          <input type="checkbox" value="remember-me"> Remember me
+        </label>
+      </div>
+      <button id="myButton" class="btn btn-lg btn-primary btn-block" type="submit" onclick="return login()">Sign in</button>
+      <p class="mt-5 mb-3 text-muted text-center">&copy; 2018</p>
+    </form>
+  </body>
+  <div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" src="http://localhost:3000"></iframe>
+  </div>	
+</html>
+
+<script type="text/javascript">
+function login() {
+    var tid = document.getElementById("input_tenant");
+
+    if (tid.value == "tenant1"){
+		location = 'status.html';
+    }
+    else {
+		alert('Error Account!');
+    }
+	return false;
+}
+</script>
+

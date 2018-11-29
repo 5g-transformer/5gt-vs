@@ -1,0 +1,250 @@
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>Transformer OAM</title>
+
+<!-- Bootstrap core CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<!-- Custom styles for this template -->
+<link href="dashboard.css" rel="stylesheet">
+<style type="text/css">/* Chart.js */
+@-webkit-keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}@keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}.chartjs-render-monitor{-webkit-animation:chartjs-render-animation 0.001s;animation:chartjs-render-animation 0.001s;}</style>
+
+<script language="javascript">
+function pop_select(){
+var nw_type=document.getElementById('networktype').value;
+var pur=document.getElementById('purpose').value;
+if(nw_type==0){
+    document.getElementById('embb_service').style="display:none;"
+    document.getElementById('embb_opt').style="display:none;"
+}
+else if(nw_type==2 && pur==1){
+    document.getElementById('embb_service').style="display:block;"
+    document.getElementById('embb_opt').style="display:block;"
+    document.getElementById('urllc_service').style="display:none;"
+    document.getElementById('urllc_opt').style="display:none;"
+    document.getElementById('mmtc_service').style="display:none;"
+    document.getElementById('mmtc_opt').style="display:none;"
+}
+else if(nw_type==2 && pur==2){
+    document.getElementById('urllc_service').style="display:block;"
+    document.getElementById('urllc_opt').style="display:block;"
+    document.getElementById('embb_service').style="display:none;"
+    document.getElementById('embb_opt').style="display:none;"
+    document.getElementById('mmtc_service').style="display:none;"
+    document.getElementById('mmtc_opt').style="display:none;"
+}
+else if(nw_type==2 && pur==3){
+    document.getElementById('mmtc_service').style="display:block;"
+    document.getElementById('mmtc_opt').style="display:block;"
+    document.getElementById('embb_service').style="display:none;"
+    document.getElementById('embb_opt').style="display:none;"
+    document.getElementById('urllc_service').style="display:none;"
+    document.getElementById('urllc_opt').style="display:none;"
+}
+else {
+    document.getElementById('embb_service').style="display:none;"
+    document.getElementById('embb_opt').style="display:none;"
+    document.getElementById('urllc_service').style="display:none;"
+    document.getElementById('urllc_opt').style="display:none;"
+    document.getElementById('mmtc_service').style="display:none;"
+    document.getElementById('mmtc_opt').style="display:none;"
+}
+}
+
+function service_select(){
+var nw_type=document.getElementById('networktype').value;
+var pur=document.getElementById('purpose').value;
+var s=document.getElementById('embb_service').value;
+if(nw_type == 2 && pur==1){
+	if(s==1){
+    	document.getElementById('latency').style="display:block;"
+    	document.getElementById('latency_option').style="display:block;"
+    	document.getElementById('user').style="display:block;"
+    	document.getElementById('user_option').style="display:block;"
+	}
+	else {
+    	document.getElementById('latency').style="display:none;"
+    	document.getElementById('latency_option').style="display:none;"
+    	document.getElementById('user').style="display:none;"
+    	document.getElementById('user_option').style="display:none;"
+	}
+}
+else {
+    document.getElementById('latency').style="display:none;"
+    document.getElementById('latency_option').style="display:none;"
+    document.getElementById('user').style="display:none;"
+    document.getElementById('user_option').style="display:none;"
+}
+}
+</script>
+
+
+</head>
+<body>
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Hi, I'm MSG^_^</a>
+    <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+        <a class="nav-link" href="#">Sign out</a>
+        </li>
+    </ul>
+</nav>
+<div class="container-fluid">
+    <div class="row">	
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">			
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <!--Icon-->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        Profile
+                    </a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link active" href="index.html">
+                        <!--Icon-->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        Status
+                    </a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link active" href="smng.html">
+                        <!--Icon-->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                        Slice Management
+                    </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+<div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;"><div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div><div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div></div>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">New service</h1>
+</div>
+<div id="legendPlaceholder"></div>
+<table>
+    <tr align="center">
+        <th>Choose your requirements</th>
+    </tr>
+</table><br><br>
+
+<form method="get" action="cgi-bin/nfvo.cgi">
+    <label for="servicename">Service name</label>
+    <div class="input-group mb-3">
+    	<input class="form-control" id="servicename" placeholder="service-name">
+    </div>
+	<label for="networktype">Network type</label>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="networktype">Options</label>
+        </div>
+        <select class="custom-select" id="networktype" onchange="javascript:pop_select(); service_select();">
+            <option selected value="0">Choose...</option>
+            <option value="1">WiFi</option>
+            <option value="2">LTE</option>
+        </select>
+    </div>
+    <label for="purpose">Purpose</label>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="purpose">Options</label>
+        </div>
+        <select class="custom-select" id="purpose" onchange="javascript:pop_select(); service_select();">
+            <option selected value="0">Choose...</option>
+            <option value="1">eMBB</option>
+            <option value="2">URLLC</option>
+            <option value="3">mMTC</option>
+        </select>
+    </div><br>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <label class="input-group-text" id="embb_opt"for="embb_service" style="display:none;" >Service for eMBB</label>
+        </div>
+        <select class="custom-select" id="embb_service" style="display:none;" onchange="javascript:service_select();">
+            <option selected>Choose...</option>
+            <option value="1">Streaming (VLC)</option>
+            <option value="2">EPC</option>
+        </select>
+    </div><br>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <label class="input-group-text" id="urllc_opt"for="urllc_service" style="display:none;" >Service for URLLC</label>
+        </div>
+        <select class="custom-select" id="urllc_service" style="display:none;" onchange="javascript:service_select();">
+            <option selected>Choose...</option>
+            <option value="1">V2X (PyVT)</option>
+            <option value="2">EPC</option>
+        </select>
+    </div><br>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <label class="input-group-text" id="mmtc_opt"for="mmtc_service" style="display:none;" >Service for mMTC</label>
+        </div>
+        <select class="custom-select" id="mmtc_service" style="display:none;" onchange="javascript:service_select();">
+            <option selected>Choose...</option>
+            <option value="1">IOT (MQTT server)</option>
+            <option value="2">EPC</option>
+        </select>
+    </div><br>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <label class="input-group-text" id="latency_option"for="latency" style="display:none;">Latency Constraint (ms)</label>
+        </div>
+    	<input class="form-control" id="latency" placeholder="10" style="display:none;">
+    </div><br>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <label class="input-group-text" id="user_option"for="user" style="display:none;">Streaming (connections)</label>
+        </div>
+        <select class="custom-select" id="user" style="display:none;">
+            <option selected>Choose...</option>
+            <option value="1">100</option>
+            <option value="2">500</option>
+            <option value="3">1000</option>
+        </select>
+    </div><br>
+    <input type="submit" class="btn btn-primary btn-lg btn-block" value="Send">
+    </form>
+
+<a href="smng.html" class="btn btn-secondary btn-lg btn-block" role="button" >Cancel</a>
+
+    </main>
+	
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="http://www.flotcharts.org/flot/jquery.flot.js"></script>
+    <script src="http://www.flotcharts.org/flot/jquery.flot.pie.js"></script>
+
+    <!-- set variable-->
+    <script
+type="text/javascript"
+language="JavaScript">
+
+<!--
+CPU = 0;
+vnf2 = 'wqdqd';
+//-->
+    </script>
+
+
+    <!-- call cgi -->
+
+
+
+</body>
+</html>

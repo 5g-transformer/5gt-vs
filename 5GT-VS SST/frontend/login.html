@@ -1,0 +1,58 @@
+<html>
+
+<head>
+<title>Login</title>
+</head>
+<body>
+
+Please choose your slice 
+
+
+<form method="get" action="index.html">
+Network type
+<select name="network" style="width:100px">
+ <option>select</option>
+ <option>LTE</option>
+ <option>WiFi</option>
+</select><br><br>
+NFV type:
+<select name="NFV_type" style="width:150px">
+ <option>select</option>
+ <option>URLLC</option>
+ <option>mmTC</option>
+ <option >eMBB</option>
+</select><br><br>
+Latency constraints:
+<select name="latency" style="width:150px">
+ <option>select</option>
+ <option>30ms</option>
+ <option>50ms</option>
+ <option>100ms</option>
+</select><br><br>
+Throughput requirements:
+<select name="tpt" style="width:150px">
+ <option>select</option>
+ <option>20Mbps</option>
+ <option>50Mbps</option>
+ <option>70Mbps</option>
+ <option>100Mbps</option>
+</select><br><br>
+Maximum users/second:
+<select name="users" style="width:150px">
+ <option>select</option>
+ <option>500</option>
+ <option>1000</option>
+ <option>10000</option>
+</select><br><br>
+<input type="submit" value="send">
+</form>
+
+<br><br><br>
+<form method="get" action="new_epc.html">
+New User?
+<input type="submit" value="Deploy your EPC">
+</form>
+
+
+</body>
+</html>
