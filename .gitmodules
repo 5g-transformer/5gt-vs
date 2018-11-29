@@ -1,0 +1,3 @@
+[submodule "sebastian/SEBASTIAN_WEB_GUI/gentelella"]
+	path = sebastian/SEBASTIAN_WEB_GUI/gentelella
+	url = https://github.com/puikinsh/gentelella

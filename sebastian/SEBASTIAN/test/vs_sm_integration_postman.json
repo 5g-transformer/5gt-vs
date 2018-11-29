@@ -1,0 +1,1496 @@
+{
+	"info": {
+		"_postman_id": "60eb6871-fbf6-4c6f-a15a-bf9c656400f3",
+		"name": "Vertical Slicer",
+		"description": "API of the 5G-Transformer Vertical Slicer.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "vs",
+			"item": [
+				{
+					"name": "getTenantGroups",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/group",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createTenant",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"username\": \"{{test_user}}\",\n\t\"password\": \"{{test_password}}\"\n}"
+						},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/admin/group/{{test_group}}/tenant",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								"{{test_group}}",
+								"tenant"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getTenantsInGroup",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/admin/group/:{{test_group}}/tenant",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								":{{test_group}}",
+								"tenant"
+							],
+							"variable": [
+								{
+									"key": "",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getTenant",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/group/:groupname/tenant/:username",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								":groupname",
+								"tenant",
+								":username"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "{{username}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteTenant",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/group/:groupname/tenant/:username",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								":groupname",
+								"tenant",
+								":username"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "{{username}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getTenantSlas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/admin/group/{{test_group}}/tenant/{{test_user}}/sla",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								"{{test_group}}",
+								"tenant",
+								"{{test_user}}",
+								"sla"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getSla",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/group/:groupname/tenant/:username/sla/:slaId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								":groupname",
+								"tenant",
+								":username",
+								"sla",
+								":slaId"
+							],
+							"variable": [
+								{
+									"key": "slaId",
+									"value": "{{slaId}}"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createTenantSla",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"slaStatus\": \"ENABLED\",\n\t\"slaConstraints\": [{\n\t\t\"maxResourceLimit\": {\n\t\t\t\t\"diskStorage\": 100,\n\t\t\t\t\"vCPU\": 4,\n\t\t\t\t\"memoryRAM\": 8192\n\t\t\t},\n\t\t\"scope\": \"GLOBAL_VIRTUAL_RESOURCE\"\n\t\t}\n\t]\n}\n"
+						},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/admin/group/{{test_group}}/tenant/{{test_user}}/sla",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								"{{test_group}}",
+								"tenant",
+								"{{test_user}}",
+								"sla"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteSla",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/group/:groupname/tenant/:username/sla/:slaId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								":groupname",
+								"tenant",
+								":username",
+								"sla",
+								":slaId"
+							],
+							"variable": [
+								{
+									"key": "slaId",
+									"value": "{{slaId}}"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getGroup",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/admin/group/{{test_group}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								"{{test_group}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createGroup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/admin/group/{{test_group}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								"{{test_group}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteGroup",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/group/:name",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"group",
+								":name"
+							],
+							"variable": [
+								{
+									"key": "name",
+									"value": "{{name}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getTenants",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/admin/groups/tenants",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"groups",
+								"tenants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getNetworkSlice",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/nsmf/networkslice/:nsiId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"nsmf",
+								"networkslice",
+								":nsiId"
+							],
+							"variable": [
+								{
+									"key": "nsiId",
+									"value": "{{nsiId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getNetworkSliceIds",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/nsmf/networksliceids",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"nsmf",
+								"networksliceids"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getNetworkSlices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/admin/nsmf/networkslices",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"admin",
+								"nsmf",
+								"networkslices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "instantiateVs",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\":\"CDN_small\",\n\t\"description\":\"CDN service for max 1000 users\",\n\t\"vsdId\":\"{{last_vsd_id}}\",\n\t\"tenantId\":\"ATOS\"\n}"
+						},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/basic/vslcm/vs?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"basic",
+								"vslcm",
+								"vs"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVsInstance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/basic/vslcm/vs/:vsiId?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"basic",
+								"vslcm",
+								"vs",
+								":vsiId"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "vsiId",
+									"value": "{{vsiId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "modifyVsInstance",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "request"
+						},
+						"url": {
+							"raw": "http://localhost:8082/vs/basic/vslcm/vs/:vsiId?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"basic",
+								"vslcm",
+								"vs",
+								":vsiId"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "vsiId",
+									"value": "{{vsiId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "purgeVsInstance",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/basic/vslcm/vs/:vsiId?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"basic",
+								"vslcm",
+								"vs",
+								":vsiId"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "vsiId",
+									"value": "{{vsiId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "terminateVsInstance",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/basic/vslcm/vs/:vsiId/terminate?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"basic",
+								"vslcm",
+								"vs",
+								":vsiId",
+								"terminate"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "vsiId",
+									"value": "{{vsiId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getAllVsInstancesId",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/basic/vslcm/vsId?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"basic",
+								"vslcm",
+								"vsId"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getAllVsBlueprints",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"disabled": false
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://192.168.137.70:8082/vs/catalogue/vsblueprint",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"137",
+								"70"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"catalogue",
+								"vsblueprint"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createVsBlueprint",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vsBlueprint\": {\n\t\t\"version\": \"0.1\",\n\t\t\"name\": \"CDN\",\n\t\t\"description\": \"Content Delivery Network\",\n\t\t\"parameters\": [{\n\t\t\t\"parameterId\": \"users\",\n\t\t\t\"parameterName\": \"users\",\n\t\t\t\"parameterType\": \"number\",\n\t\t\t\"parameterDescription\": \"number of CDN users\",\n\t\t\t\"applicabilityField\": \"media\"\n\t\t}]\n\t},\n\t\"translationRules\": [{\n\t\t\"nsdId\": \"vCDN_v02\",\n\t\t\"nsdVersion\": \"0.2\",\n\t\t\"nsFlavourId\": \"df_vCDN\",\n\t\t\"nsInstantiationLevelId\": \"il_vCDN_big\",\n\t\t\"input\": [{\n\t\t\t\"parameterId\": \"users\",\n\t\t\t\"minValue\": 1001,\n\t\t\t\"maxValue\": 2500\n\t\t}]\n\t}, {\n\t\t\"nsdId\": \"vCDN_v02\",\n\t\t\"nsdVersion\": \"0.2\",\n\t\t\"nsFlavourId\": \"df_vCDN\",\n\t\t\"nsInstantiationLevelId\": \"il_vCDN_small\",\n\t\t\"input\": [{\n\t\t\t\"parameterId\": \"users\",\n\t\t\t\"minValue\": 1,\n\t\t\t\"maxValue\": 1000\n\t\t}]\n\t}]\n}\n"
+						},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/catalogue/vsblueprint?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"catalogue",
+								"vsblueprint"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVsBlueprint",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/catalogue/vsblueprint/:vsbId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"catalogue",
+								"vsblueprint",
+								":vsbId"
+							],
+							"variable": [
+								{
+									"key": "vsbId",
+									"value": "{{vsbId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteVsBlueprint",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8082/vs/catalogue/vsblueprint/:vsbId?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"catalogue",
+								"vsblueprint",
+								":vsbId"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "vsbId",
+									"value": "{{vsbId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getAllVsDescriptors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/catalogue/vsdescriptor?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"catalogue",
+								"vsdescriptor"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createVsDescriptor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vsd\":{\n\t\t\"name\":\"VSD_CDN_small_new\",\n\t\t\"version\":\"0.1\",\n\t\t\"vsBlueprintId\":\"7\",\n\t\t\"sst\":\"EMBB\",\n\t\t\"managementType\":\"PROVIDER_MANAGED\",\n\t\t\"qosParameters\":{\n\t\t\t\"users\":\"1000\"\n\t\t}\n\t},\n\t\"tenantId\":\"ATOS\",\n\t\"isPublic\":true\n}\n"
+						},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/catalogue/vsdescriptor?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"catalogue",
+								"vsdescriptor"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getVsDescriptor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/catalogue/vsdescriptor/:vsdId?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"catalogue",
+								"vsdescriptor",
+								":vsdId"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "vsdId",
+									"value": "{{last_vs_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteVsDescriptor",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://{{vs_address}}:8082/vs/catalogue/vsdescriptor/11?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"{{vs_address}}"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"catalogue",
+								"vsdescriptor",
+								"11"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "whoami",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"disabled": false
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://192.168.137.70:8082/vs/whoami?authenticated={{authenticated}}&authorities[0].authority={{authorities[0].authority}}&credentials={{credentials}}&details={{details}}&principal={{principal}}",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"137",
+								"70"
+							],
+							"port": "8082",
+							"path": [
+								"vs",
+								"whoami"
+							],
+							"query": [
+								{
+									"key": "authenticated",
+									"value": "{{authenticated}}"
+								},
+								{
+									"key": "authorities[0].authority",
+									"value": "{{authorities[0].authority}}"
+								},
+								{
+									"key": "credentials",
+									"value": "{{credentials}}"
+								},
+								{
+									"key": "details",
+									"value": "{{details}}"
+								},
+								{
+									"key": "principal",
+									"value": "{{principal}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Folder for vs"
+		},
+		{
+			"name": "login_admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "de0fbb22-c78d-4eff-bb5c-0e718bdc1597",
+						"exec": [
+							"postman.setNextRequest(\"vs/createGroup\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "admin",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{vs_address}}:8082/login",
+					"protocol": "http",
+					"host": [
+						"{{vs_address}}"
+					],
+					"port": "8082",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login_test",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "{{test_user}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{test_password}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{vs_address}}:8082/login",
+					"protocol": "http",
+					"host": [
+						"{{vs_address}}"
+					],
+					"port": "8082",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "admin",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "admin",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "6e9ed9c6-5c5c-4e57-8ee4-8051307eac0e",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "f95b3aa2-5398-440f-ae8b-dc6ad4ad191c",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "87eea1d0-d632-4d2d-913b-dc0b25086734",
+			"key": "vs_address",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "36fa88e8-0dd5-4b67-a1c8-732cfc7a3d2e",
+			"key": "test_group",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "71c62d2d-55a1-4d51-be58-580d9780acec",
+			"key": "test_user",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "27b4f3c0-1e6d-40ba-b894-e4bf995773a1",
+			"key": "test_password",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "81573448-14f1-4224-98b0-6a73a7e23a85",
+			"key": "last_vsd_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

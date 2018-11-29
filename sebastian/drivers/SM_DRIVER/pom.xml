@@ -1,0 +1,93 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>it.nextworks.nfvmano</groupId>
+	<artifactId>sm-driver</artifactId>
+	<packaging>jar</packaging>
+	<version>0.0.2-SNAPSHOT</version>
+
+	<name>sm-driver</name>
+	<description> SM driver </description>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.9.RELEASE</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+	</properties>
+	<dependencies>
+
+		<dependency>
+			<groupId>it.nextworks.nfvmano</groupId>
+			<artifactId>NfvoCommonDriver</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.json</groupId>
+    		<artifactId>json</artifactId>
+    		<version>20180130</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>3.0.2.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>it.nextworks.nfvmano</groupId>
+			<artifactId>NfvManoLibsDescriptors</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>it.nextworks.nfvmano</groupId>
+			<artifactId>NfvManoLibsCataloguesIf</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>it.nextworks.nfvmano</groupId>
+			<artifactId>NfvManoLibsIfa13NsLcmIf</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<filtering>true</filtering>
+				<directory>src/main/resources</directory>
+				<includes>
+
+					<include>application.properties</include>
+				</includes>
+
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+				<!-- fix for mishaps in backports of ubuntu package -->
+				<configuration>
+					<argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+				</configuration>
+				<!-- /fix -->
+			</plugin>
+		</plugins>
+
+	</build>
+
+</project>
