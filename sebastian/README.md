@@ -15,7 +15,7 @@ Then run the `install_libs.sh` script giving as argument the desired parent fold
 
 ### 2.Build the application
 
-In the `<repo-root>` folder, run 
+In the `<repo-root>/sebastian` folder, run 
 ```mvn clean install```
 
 A jar file (`Sebastian-<version>-<release-type>.jar`) will be generated in the `<repo-root>/SEBASTIAN/target` folder.
