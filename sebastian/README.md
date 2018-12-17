@@ -15,10 +15,11 @@ Then run the `install_libs.sh` script giving as argument the desired parent fold
 
 ### 2.Build the application
 
-Enter the `<repo-root>/SEBASTIAN` folder and run 
-```mvn clean package```
+In the `<repo-root>` folder, run 
+```mvn clean install```
 
 A jar file (`Sebastian-<version>-<release-type>.jar`) will be generated in the `<repo-root>/SEBASTIAN/target` folder.
+This is a portable jar, containing everything needed by the application, and can be used as-is, even on other systems.
 
 ### 3.Start the application
 
