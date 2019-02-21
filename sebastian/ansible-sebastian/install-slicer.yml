@@ -1,0 +1,175 @@
+- hosts: target
+
+  handlers:
+    - import_tasks: handlers/main.yml
+
+  tasks:
+    - name: Variables check
+      fail:
+        msg: "Variable '{{ item }}' is not defined"
+      when: item not in vars
+      with_items:
+        - slicer_jar
+        - gui_folder
+        - fileserver_folder
+
+    - name: Set variable defaults
+      include_vars:
+        file: "default/main.yml"
+
+    - name: Ensure PPA for openjdk is available
+      become: yes
+      become_user: root
+      apt_repository:
+        repo: "ppa:openjdk-r/ppa"
+      when: ansible_distribution == 'Ubuntu' and (ansible_lsb.major_release|int < 16 or ansible_lsb.release == '16.04')
+
+    - name: Ensure java is installed
+      become: yes
+      become_user: root
+      import_role:
+        name: geerlingguy.java
+      vars:
+        java_packages:
+          - openjdk-8-jdk
+
+    - name: Ensure python3 is installed
+      become: yes
+      become_user: root
+      apt:
+        name: python3-dev
+
+    - name: Ensure pip3 is installed
+      become: yes
+      become_user: root
+      apt:
+        name: python3-pip
+
+    - name: Ensure tornado is installed
+      become: yes
+      become_user: root
+      pip:
+        name: tornado
+
+    - name: Ensure PostgreSQL is installed
+      become: yes
+      become_user: root
+      import_role:
+        name: geerlingguy.postgresql
+      vars:
+        postgresql_databases:
+          - name: "{{ db_name_play }}"
+        postgresql_users:
+          - name: "{{ db_user_play }}"
+            password: "{{ db_password_play }}"
+        postgresql_global_config_options:
+          - option: port
+            value: "{{ db_port_play }}"
+        postgresql_restarted_state: "restarted"
+        postgresql_python_library: "python{{ ansible_python.version.major }}-psycopg2"
+
+    - name: Ensure RabbitMQ is installed
+      become: yes
+      become_user: root
+      apt:
+        name: rabbitmq-server
+
+    - name: Ensure RabbitMQ service is configured
+      become: yes
+      become_user: root
+      service:
+        name: rabbitmq-server
+        state: started
+        enabled: yes
+
+    - name: Ensure the slicer is installed and enabled
+      become: yes
+      become_user: root
+      include_role:
+        name: mcapitani.easy_service
+      vars:
+        service_name: vertical-slicer
+        bin_src: "{{ slicer_jar }}"
+        config_templates:
+          - src: templates/application.properties.j2
+            dest: /etc/slicer/application.properties
+        bin_dest: /usr/share/slicer/sebastian.jar
+        config_dest: /etc/slicer/
+        service_command: "/usr/bin/env java -jar /usr/share/slicer/sebastian.jar --spring.config.location=file:/etc/slicer/"
+
+    - name: Ensure the fileserver is installed and enabled
+      become: yes
+      become_user: root
+      include_role:
+        name: mcapitani.easy_service
+      vars:
+        service_name: vs-fileserver
+        bin_src: "{{ fileserver_folder }}/fileserver.py"
+        config_src: "{{ fileserver_folder }}/fileserver.conf"
+        bin_dest: /usr/share/slicer/fileserver.py
+        config_dest: /etc/slicer/
+        service_command: "/usr/bin/env python3 /usr/share/slicer/fileserver.py --config /etc/slicer/fileserver.conf"
+
+    - name: Ensure GUI folder is present
+      become: yes
+      become_user: root
+      file:
+        path: "/var/www/slicer"
+        state: directory
+
+    - name: Ensure GUI files are present
+      become: yes
+      become_user: root
+      synchronize:
+        src: "{{ gui_folder | regex_replace('\\/$', '') + '/'}}"
+        # Ensure there is a trailing slash
+        dest: /var/www/slicer
+
+    - name: Ensure Apache is installed
+      become: yes
+      become_user: root
+      apt:
+        name: apache2
+
+    - name: Fix Apache configuration
+      become: yes
+      become_user: root
+      block:
+        - name: apache2.conf
+          copy:
+            src: files/apache2.conf
+            dest: /etc/apache2/apache2.conf
+          notify: restart apache
+
+        - name: ssi.conf
+          copy:
+            src: files/ssi.conf
+            dest: /etc/apache2/conf-available/ssi.conf
+          notify: restart apache
+
+        - name: default site
+          copy:
+            src: files/000-default.conf
+            dest: /etc/apache2/sites-available/000-default.conf
+          notify: restart apache
+
+        - name: Enable Include
+          file:
+            src: "/etc/apache2/mods-available/include.load"
+            dest: "/etc/apache2/mods-enabled/include.load"
+            state: link
+          notify: restart apache
+
+        - name: Enable SSI
+          file:
+            src: "/etc/apache2/conf-available/ssi.conf"
+            dest: "/etc/apache2/conf-enabled/ssi.conf"
+            state: link
+          notify: restart apache
+
+        - name: Enable site
+          file:
+            src: "/etc/apache2/sites-available/000-default.conf"
+            dest: "/etc/apache2/sites-enabled/000-default.conf"
+            state: link
+          notify: restart apache

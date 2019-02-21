@@ -1,0 +1,22 @@
+slicer_jar: ~/path/to/repo/sebastian/SEBASTIAN/target/Sebastian-0.0.2-SNAPSHOT.jar
+gui_folder: ~/path/to/repo/sebastian/SEBASTIAN_WEB_GUI/
+fileserver_folder: ~/path/to/repo/sebastian/fileserver
+#
+#### DEFAULTED vars
+#### Uncomment and modify if required
+#
+#### VS config
+# server_port: 8082
+#
+#### PostgreSQL config
+# db_name: sebastian
+# db_user: sebastian
+# db_password: sebastian
+# db_port: 5432
+#
+#### Values in application.properties
+# hibernate_ddl_auto: create-drop
+#
+# nfvo_type: TIMEO
+# nfvo_address: localhost
+# nfvo_polling: 20

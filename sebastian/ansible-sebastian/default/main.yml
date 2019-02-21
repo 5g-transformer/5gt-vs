@@ -1,0 +1,12 @@
+server_port_play: "{{ server_port | default(8082) }}"
+
+db_name_play: "{{ db_name | default('sebastian') }}"
+db_user_play: "{{ db_user | default('sebastian') }}"
+db_password_play: "{{ db_password | default('sebastian') }}"
+db_port_play: "{{ do_port | default(5432) }}"
+
+hibernate_ddl_auto_play: "{{ hibernate_ddl_auto | default('create-drop') }}"
+
+nfvo_type_play: "{{ nfvo_type | default('TIMEO') }}"
+nfvo_address_play: "{{ nfvo_address | default('localhost') }}"
+nfvo_polling_play: "{{ nfvo_polling | default(20) }}"
