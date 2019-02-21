@@ -364,15 +364,17 @@ import it.nextworks.nfvmano.nfvodriver.sm.messages.*;
 	
 	
 	public String onboardNsd(String urlTemplate,OnboardNsdRequest request) throws MalformattedElementException, AlreadyExistingEntityException, FailedOperationException {
+		//TODO: Pending discussions at SM level
 		log.debug("Building HTTP request to onboard NSD.");
 		HttpHeaders header = new HttpHeaders();
 		header.add("Content-Type", "application/json");
 		HttpEntity<?> postEntity = new HttpEntity<>(request, header);
 		
-		String url = urlTemplate + "/nsd";
-		
-		try {
-			log.debug("Sending HTTP request to onboard NSD.");
+		String url = this.smUrl+urlTemplate;
+		log.debug("Sending HTTP request to onboard NSD.");
+		return "";
+		/*try {
+			
 			
 			ResponseEntity<String> httpResponse =
 					restTemplate.exchange(url, HttpMethod.POST, postEntity, String.class);
@@ -395,7 +397,7 @@ import it.nextworks.nfvmano.nfvodriver.sm.messages.*;
 		} catch (RestClientException e) {
 			log.debug("error while interacting with NFVO.");
 			throw new FailedOperationException("Error while interacting with NFVO NSD catalogue at url " + url);
-		}
+		}*/
 	}
 	
 	public String onboardPnfd(String urlTemplate, OnboardPnfdRequest request) throws MalformattedElementException, AlreadyExistingEntityException, FailedOperationException {

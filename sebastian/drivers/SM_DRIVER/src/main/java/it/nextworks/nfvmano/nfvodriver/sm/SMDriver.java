@@ -68,6 +68,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.io.File;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -101,7 +103,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     private String queryNsdTemplate = "/ns/nsd/{nsdid}/{nsdversion}";
     private String queryOnBoardedVnfPkgInfoResponseTemplate = "/ns/vnfd/{vnfdid}/{vnfdversion}";
     private String queryNsiStatusTemplate = "/ns/{nsiid}";
-    
+    private String onboardNsdTemplate = "/nsd";
     
     public SMDriver(){
 
@@ -143,7 +145,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         log.info("baseUrl: "+ this.baseUrl);
         this.nSStatusTemplate=props.getProperty("ns_status", "/ns/{nsid}");
         log.info("nsStatusTemplate: "+ this.nSStatusTemplate);
-
+        this.onboardNsdTemplate = props.getProperty("onboard_nsd", "/nsd");
     }
 
     public File fetchOnboardedApplicationPackage(String s) throws MethodNotImplementedException, NotExistingEntityException, MalformattedElementException {
@@ -191,8 +193,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     }
 
     public String onboardNsd(OnboardNsdRequest onboardNsdRequest) throws MethodNotImplementedException, MalformattedElementException, AlreadyExistingEntityException, FailedOperationException {
-        log.info("Received call to onboardNsd, parameter {}.", onboardNsdRequest);
-        throw new MethodNotImplementedException("not supported in SM.");
+        //TODO: Pending discussions. Just verify the NSD, call the rest client and return
+    	log.info("Received call to onboardNsd, parameter {}.", onboardNsdRequest);
+    	onboardNsdRequest.isValid(); 
+    	log.info("onboardNsdRequest is valid!");
+    	this.restClient.onboardNsd(onboardNsdTemplate, onboardNsdRequest);
+        return "";
+        //throw new MethodNotImplementedException("not supported in SM.");
+        
     }
 
     public void enableNsd(EnableNsdRequest enableNsdRequest) throws MethodNotImplementedException, MalformattedElementException, NotExistingEntityException, FailedOperationException {
@@ -251,8 +259,48 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     }
 
     public OnBoardVnfPackageResponse onBoardVnfPackage(OnBoardVnfPackageRequest onBoardVnfPackageRequest) throws MethodNotImplementedException, AlreadyExistingEntityException, FailedOperationException, MalformattedElementException {
-        log.info("Received call to onBoardVnfPackage, parameter {}.", onBoardVnfPackageRequest);
-        throw new MethodNotImplementedException("not supported in SM.");
+        //TODO
+    	log.warn("Received call to onBoardVnfPackage, parameter {}.", onBoardVnfPackageRequest);
+        onBoardVnfPackageRequest.isValid();
+        log.warn("Received call to onBoardVnfPackage name:", onBoardVnfPackageRequest.getName());
+        String vnfdId = "";
+        String onboardedVnfPkgInfoId = "";
+        try {
+        	String vnfPath = onBoardVnfPackageRequest.getVnfPackagePath();
+			String fileName = vnfPath.substring(vnfPath.lastIndexOf('/')+1);
+        	Process process = Runtime.getRuntime().exec("wget -P /tmp/ "+vnfPath);
+			processErrorLog(process);
+        	process = Runtime.getRuntime().exec("tar xf /tmp/"+fileName+" -C /tmp");
+			processErrorLog(process);
+        	String jsonFileName= fileName.substring(0,fileName.lastIndexOf('.')+1)+"json";
+			log.debug("JSON FILENAME:", jsonFileName);
+			
+			String[] cmd = {
+					"/bin/bash",
+					"-c",
+					"cat /tmp/"+jsonFileName+" | jq -r '.vnfdId'"
+					};
+			process = Runtime.getRuntime().exec(cmd);
+			processErrorLog(process);
+			BufferedReader input =  new BufferedReader  
+				          (new InputStreamReader(process.getInputStream()));
+			 vnfdId = input.readLine();
+			 log.debug("obtained vnfdId:", vnfdId);
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
+        return new OnBoardVnfPackageResponse(vnfdId,onboardedVnfPkgInfoId);
+        //throw new MethodNotImplementedException("not supported in SM.");
+    }
+    
+    private void processErrorLog(Process process) throws IOException {
+    	InputStream stderr = process.getErrorStream ();
+    	BufferedReader input =  new BufferedReader(new InputStreamReader(stderr));
+    	String line;
+    	while((line=input.readLine())!=null) {
+    		log.error(line);
+    	}
+
     }
 
     public void enableVnfPackage(EnableVnfPackageRequest enableVnfPackageRequest) throws MethodNotImplementedException, NotExistingEntityException, FailedOperationException, MalformattedElementException {
