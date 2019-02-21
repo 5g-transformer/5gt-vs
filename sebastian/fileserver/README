@@ -1,0 +1,10 @@
+FILESERVER
+==========
+
+fileserver receiving and distributing files via HTTP. Extremely simple.
+
+Requires Python3 and tornado (pip3 install tornado)
+
+python3 fileserver.py --help
+
+for help and CLI options
