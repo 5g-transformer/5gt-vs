@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.nextworks.nfvmano.sebastian.engine.messages.NsStatusChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,7 @@ public class VsLcmService implements VsLcmProviderInterface {
 		try {
 			engine.instantiateVs(vsiId, request);
 			log.debug("Synchronous processing for VSI instantiation request completed for VSI ID " + vsiId);
+			//Thread.sleep(1000000);
 			return vsiId;
 		} catch (Exception e) {
 			vsRecordService.setVsFailureInfo(vsiId, e.getMessage());
@@ -231,7 +233,21 @@ public class VsLcmService implements VsLcmProviderInterface {
 		
 		VerticalServiceInstance vsi = vsRecordService.getVsInstance(vsiId);
 		if (tenantId.equals(adminTenant) || vsi.getTenantId().equals(tenantId)) {
+			String nsiId = vsi.getNetworkSliceId();
+
+			//Remove also the SO-managed NSIs
+			//Retrieve nsInstance -> get all nsSubnets
+			//For nsSub : nsSubnets -> id nsSub.soManaged==true -> vsRecords.deleteNsInstance
+			NetworkSliceInstance nsi = vsRecordService.getNsInstance(nsiId);
+			for (String nsiSubnetId : nsi.getNetworkSliceSubnetInstances()){
+				nsi = vsRecordService.getNsInstance(nsiSubnetId);
+				if (nsi.getSoManaged()){
+					vsRecordService.deleteNsInstance(nsiSubnetId);
+				}
+			}
+			vsRecordService.deleteNsInstance(nsiId);
 			vsRecordService.removeVsInstance(vsiId);
+			engine.removeVerticalServiceLcmManager(vsiId);
 			log.debug("VSI purge action completed for VSI ID " + vsiId);
 		} else {
 			log.debug("Tenant " + tenantId + " is not allowed to purge VS instance " + vsiId);

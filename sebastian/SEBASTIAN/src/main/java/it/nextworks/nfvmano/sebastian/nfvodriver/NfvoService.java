@@ -21,13 +21,13 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import it.nextworks.nfvmano.libs.catalogues.interfaces.elements.NsdInfo;
 import it.nextworks.nfvmano.nfvodriver.logging.LoggingDriver;
-import it.nextworks.nfvmano.nfvodriver.nfvopoller.NfvoOperationPollingManager;
 import it.nextworks.nfvmano.sebastian.admin.elements.VirtualResourceUsage;
 import it.nextworks.nfvmano.sebastian.common.Utilities;
 import it.nextworks.nfvmano.sebastian.nfvodriver.timeo.TimeoDriver;
-import it.nextworks.nfvmano.nfvodriver.sm.SMDriver;
 import it.nextworks.nfvmano.sebastian.nfvodriver.timeo.TimeoNfvoOperationPollingManager;
+import it.nextworks.nfvmano.sebastian.record.elements.NetworkSliceInstance;
 import it.nextworks.nfvmano.sebastian.translator.NfvNsInstantiationInfo;
 
 import org.slf4j.Logger;
@@ -118,9 +118,6 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 	
 	@Autowired
 	TimeoNfvoOperationPollingManager timeoNfvoOperationPollingManager;
-	
-	@Autowired
-	NfvoOperationPollingManager nfvoOperationPollingManager;
 
 	public NfvoService() {	}
 
@@ -130,11 +127,7 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 		if (nfvoType.equals("TIMEO")) {
 			log.debug("The Vertical Slicer is configured to operate over the TIMEO orchestrator.");
 			nfvoDriver = new TimeoDriver(nfvoAddress, nfvoNotificationManager, timeoNfvoOperationPollingManager);
-		} else if (nfvoType.equals("SM")) {
-			log.debug("The Vertical Slicer is configured to operate over the 5GT-SO orchestrator.");
-			nfvoDriver = new SMDriver(nfvoAddress, nfvoOperationPollingManager);
-		
-	 	} else if (nfvoType.equals("OSM")) {
+		} else if (nfvoType.equals("OSM")) {
 			log.debug("The Vertical Slicer is configured to operate over the OSM orchestrator.");
 			nfvoDriver = new OsmDriver(nfvoAddress, nfvoNotificationManager);
 		} else if (nfvoType.equals("DUMMY")) {
@@ -148,6 +141,10 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 		}
 	}
 
+	public VirtualResourceUsage computeVirtualResourceUsage(NetworkSliceInstance nsi) throws Exception {
+		return computeVirtualResourceUsage(nsi.getNsInstantiationInfo());
+	}
+
 	/**
 	 * This method computes the amount of resources (disk, vCPU, RAM) needed to instantiate an NSD with the given ID and the given deployment flavours and instantiation levels.
 	 * The amount of virtual resources is derived from the NSD and the VNFD.
@@ -156,7 +153,7 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 	 * @return the amount of virtual resources needed to instantiate the VNFs of the NSD
 	 * @throws Exception if something goes wrong in the interaction with the NFVO
 	 */
-	public VirtualResourceUsage computeVirtualResourceUsage(NfvNsInstantiationInfo nsInstantiationInfo) throws NotExistingEntityException, Exception {
+	public VirtualResourceUsage computeVirtualResourceUsage(NfvNsInstantiationInfo nsInstantiationInfo) throws Exception {
 		log.debug("Computing the amount of resources associated to a NS instantiation.");
 		
 		//TODO: parse the MEC app data when available
@@ -169,10 +166,10 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 		int ram = 0;
 		int vCPU = 0;
 		int disk = 0;
-		
+
 		QueryNsdResponse nsdRep = queryNsd(new GeneralizedQueryRequest(Utilities.buildNsdFilter(nsdId, nsdVersion), null));
 		Nsd nsd = nsdRep.getQueryResult().get(0).getNsd();
-		
+
 		//return a map with key = VNFD_ID and value a map with keys = [VNFD_ID, VNF_DF_ID, VNF_INSTANCES, VNF_INSTANTIATION_LEVEL]
 		Map<String,Map<String, String>> vnfData = nsd.getVnfdDataFromFlavour(deploymentFlavourId, instantiationLevelId);
 		
@@ -231,9 +228,24 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 		}
 		
 		log.debug("Values for the whole NSD with ID " + nsdId + ", DF " + deploymentFlavourId + ", IL " + instantiationLevelId + "- vCPU: " + vCPU + "; RAM: " + ram + "; Disk: " + disk);
-		
-		VirtualResourceUsage vru = new VirtualResourceUsage(disk, vCPU, ram);
-		return vru;
+
+		return new VirtualResourceUsage(disk, vCPU, ram);
+	}
+
+	public Nsd queryNsdAssumingOne(String nsdId, String nsdVersion) throws Exception {
+		QueryNsdResponse nsdRep = queryNsd(new GeneralizedQueryRequest(Utilities.buildNsdFilter(nsdId, nsdVersion), null));
+		List<NsdInfo> nsds = nsdRep.getQueryResult();
+		if (nsds.size() == 0) {
+			throw new NotExistingEntityException(
+					String.format("No nsd with nsdId %s and version %s", nsdId, nsdVersion)
+			);
+		}
+		if (nsds.size() > 1) {
+			throw new FailedOperationException(
+					String.format("More than one nsd with nsdId %s and version %s", nsdId, nsdVersion)
+			);
+		}
+		return nsdRep.getQueryResult().get(0).getNsd();
 	}
 	
 	@Override

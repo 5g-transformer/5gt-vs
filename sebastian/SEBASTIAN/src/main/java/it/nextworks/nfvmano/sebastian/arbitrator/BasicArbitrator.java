@@ -16,9 +16,12 @@
 package it.nextworks.nfvmano.sebastian.arbitrator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.nextworks.nfvmano.libs.descriptors.nsd.Nsd;
+import it.nextworks.nfvmano.sebastian.record.elements.NetworkSliceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +56,7 @@ public class BasicArbitrator extends AbstractArbitrator {
 	@Override
 	public List<ArbitratorResponse> computeArbitratorSolution(List<ArbitratorRequest> requests) 
 			throws FailedOperationException, NotExistingEntityException {
-		log.debug("Received request at the arbitrator. At the moment dummy reply.");
+		log.debug("Received request at the arbitrator.");
 		
 		//TODO: At the moment we process only the first request and the first ns init info
 		ArbitratorRequest req = requests.get(0);
@@ -63,10 +66,35 @@ public class BasicArbitrator extends AbstractArbitrator {
 		for (Map.Entry<String, NfvNsInstantiationInfo> e : nsInitInfos.entrySet()) {
 			nsInitInfo = e.getValue();
 		}
-		
+
 		log.debug("The request is for tenant " + tenantId + " and for NSD " + nsInitInfo.getNfvNsdId() + " with DF " + nsInitInfo.getDeploymentFlavourId() + " and instantiation level " + nsInitInfo.getInstantiationLevelId());
 		
 		try {
+
+			//Retrieve NSD info
+			String nfvNsId = nsInitInfo.getNfvNsdId();
+			String nsdVersion = nsInitInfo.getNsdVersion();
+			Nsd nsd = nfvoService.queryNsdAssumingOne(nfvNsId, nsdVersion);
+			List<String> nestedNsdIds = nsd.getNestedNsdId();
+			Map<String, Boolean> existingNsiIds = null;
+			if (!nestedNsdIds.isEmpty()){
+
+				//Retrieve <DF, IL> from nsInitInfo
+				String instantiationLevelId = nsInitInfo.getInstantiationLevelId();
+				String deploymentFlavourID = nsInitInfo.getDeploymentFlavourId();
+				//Create NSIid sublist
+				existingNsiIds = new HashMap<>();
+				for(String nestedNsdId : nestedNsdIds) {
+					//Check existing NSI per id, tenant, IL, DF
+					List<NetworkSliceInstance> nsis = vsRecordService.getUsableSlices(tenantId, nestedNsdId, nsdVersion, deploymentFlavourID, instantiationLevelId);
+
+					for (NetworkSliceInstance nsi : nsis) {
+						existingNsiIds.put(nsi.getNsiId(), false);
+						log.debug("Existing NSI found found: {}", nsi.getNsiId());
+					}
+				}
+			}
+
 			VirtualResourceUsage requiredRes = nfvoService.computeVirtualResourceUsage(nsInitInfo);
 			log.debug("The total amount of required resources for the service is the following: " + requiredRes.toString());
 			
@@ -92,7 +120,7 @@ public class BasicArbitrator extends AbstractArbitrator {
 					true, 								//newSliceRequired, 
 					null, 								//existingCompositeSlice, 
 					false, 								//existingCompositeSliceToUpdate, 
-					null, 
+					existingNsiIds,
 					null);
 			List<ArbitratorResponse> responses = new ArrayList<>();
 			responses.add(response);

@@ -18,8 +18,13 @@ package it.nextworks.nfvmano.sebastian.record.elements;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+
+import java.util.List;
 
 @Entity
 public class VerticalServiceInstance {
@@ -37,6 +42,11 @@ public class VerticalServiceInstance {
 	private VerticalServiceStatus status;
 	
 	private String networkSliceId;
+
+
+	@OneToMany
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<VerticalServiceInstance> nestedVsi;
 	
 	private String errorMessage; //this field gets a value only in case of failure
 	
@@ -156,9 +166,14 @@ public class VerticalServiceInstance {
 	public void setNetworkSliceId(String networkSliceId) {
 		this.networkSliceId = networkSliceId;
 	}
-	
-	
-	
+
+	/**
+	 *
+	 * @param nestedVsiId The nested VSI
+	 */
+	public void addNestedVsi(VerticalServiceInstance nestedVsiId) {
+		this.nestedVsi.add(nestedVsiId);
+	}
 	
 	/**
 	 * @return the errorMessage
