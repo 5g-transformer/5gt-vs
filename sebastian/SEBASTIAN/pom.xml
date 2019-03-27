@@ -93,11 +93,13 @@
             <artifactId>logging-nfvo-driver</artifactId>
             <version>0.0.2-SNAPSHOT</version>
         </dependency>
-		<dependency>
+
+        <dependency>
             <groupId>it.nextworks.nfvmano</groupId>
             <artifactId>sm-driver</artifactId>
             <version>0.0.2-SNAPSHOT</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
