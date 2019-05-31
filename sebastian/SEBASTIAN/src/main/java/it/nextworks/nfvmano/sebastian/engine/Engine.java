@@ -19,6 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.nextworks.nfvmano.sebastian.common.VsAction;
+import it.nextworks.nfvmano.sebastian.engine.messages.*;
+import it.nextworks.nfvmano.sebastian.vscoordinator.VsCoordinator;
+import it.nextworks.nfvmano.sebastian.vsnbi.messages.ModifyVsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
@@ -38,19 +42,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.nextworks.nfvmano.libs.common.exceptions.NotExistingEntityException;
+import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.elements.LocationInfo;
 import it.nextworks.nfvmano.sebastian.admin.AdminService;
 import it.nextworks.nfvmano.sebastian.arbitrator.ArbitratorService;
 import it.nextworks.nfvmano.sebastian.catalogue.repo.VsDescriptorRepository;
 import it.nextworks.nfvmano.sebastian.common.ConfigurationParameters;
 import it.nextworks.nfvmano.sebastian.common.Utilities;
-import it.nextworks.nfvmano.sebastian.engine.messages.EngineMessage;
-import it.nextworks.nfvmano.sebastian.engine.messages.InstantiateNsiRequestMessage;
-import it.nextworks.nfvmano.sebastian.engine.messages.InstantiateVsiRequestMessage;
-import it.nextworks.nfvmano.sebastian.engine.messages.NotifyNfvNsiStatusChange;
-import it.nextworks.nfvmano.sebastian.engine.messages.NotifyNsiStatusChange;
-import it.nextworks.nfvmano.sebastian.engine.messages.NsStatusChange;
-import it.nextworks.nfvmano.sebastian.engine.messages.TerminateNsiRequestMessage;
-import it.nextworks.nfvmano.sebastian.engine.messages.TerminateVsiRequestMessage;
 import it.nextworks.nfvmano.sebastian.engine.nsmf.NsLcmManager;
 import it.nextworks.nfvmano.sebastian.engine.vsmanagement.VsLcmManager;
 import it.nextworks.nfvmano.sebastian.nfvodriver.NfvoService;
@@ -108,9 +105,25 @@ public class Engine {
 	//internal map of VS LCM Managers
 	//each VS LCM Manager is created when a new VSI ID is created and removed when the VSI ID is removed
 	private Map<String, NsLcmManager> nsLcmManagers = new HashMap<>();
+
+	//internal map of VS Coordinators
+	//each VS Coordinator is created on demand, as soon as a VSI asks for resources for being instantiated
+	private Map<String, VsCoordinator> vsCoordinators = new HashMap<>();
 	
 	public Engine() { }
-	
+
+	/**
+	 * This method initializes a new VS Coordinator that will be in charge of Terminate or Update VSIs
+	 * @param vsCoordinatorId Id of VS Coordinator instance. It will be the id of the VsLcm invoking it
+	 */
+	public void initNewVsCoordinator(String vsCoordinatorId) {
+		log.debug("Initializing new VS Coordinator with id " + vsCoordinatorId);
+		VsCoordinator vsCoordinator = new VsCoordinator(vsCoordinatorId, this);
+		createQueue(vsCoordinatorId, vsCoordinator);
+		vsCoordinators.put(vsCoordinatorId, vsCoordinator);
+		log.debug("VS Coordinator with id " + vsCoordinatorId + " initialized and added to the engine.");
+	}
+
 	/**
 	 * This method initializes a new VS LCM manager that will be in charge 
 	 * of processing all the requests and events for that VSI.
@@ -163,6 +176,50 @@ public class Engine {
 			throw new NotExistingEntityException("Unable to find VS LCM Manager for VSI ID " + vsiId + ". Unable to instantiate the VSI.");
 		}
 	}
+
+	/**
+	 * This method starts the procedures to modify an existing VS by sending a message to
+	 * the proper VS LCM Manager
+	 *
+	 * @param vsiId ID of the VSI to be instantiated
+	 * @param request request with the modification details
+	 * @throws NotExistingEntityException
+	 */
+	public void modifyVs(String vsiId, ModifyVsRequest request) throws NotExistingEntityException{
+		log.debug("Processing new VSI modification request for VSI ID " + vsiId);
+		if (vsLcmManagers.containsKey(vsiId)) {
+			String topic = "lifecycle.modifyvs." + vsiId;
+			ModifyVsiRequestMessage internalMessage = new ModifyVsiRequestMessage(vsiId, request);
+			try {
+				sendMessageToQueue(internalMessage, topic);
+			} catch (JsonProcessingException e) {
+				log.error("Error while translating internal VS modification message in Json format.");
+				vsRecordService.setVsFailureInfo(vsiId, "Error while translating internal VS modification message in Json format.");
+			}
+		} else {
+			log.error("Unable to find VS LCM Manager for VSI ID " + vsiId + ". Unable to modify the VSI.");
+			throw new NotExistingEntityException("Unable to find VS LCM Manager for VSI ID " + vsiId + ". Unable to modify the VSI.");
+		}
+	}
+
+	/**
+	 *
+	 * @param invokerVsiId Is the id of the Vsi invoking the coordination. VsCoordinator uses it as Coordinator ID
+	 * @param candidateVsis List of VSIs candidate for being terminated or updated
+	 */
+	public void requestVsiCoordination(String invokerVsiId, Map<String, VsAction> candidateVsis){
+		log.debug("Processing new VSI coordination request from VSI " + invokerVsiId);
+		if (!vsCoordinators.containsKey(invokerVsiId))
+			initNewVsCoordinator(invokerVsiId);
+		String topic = "lifecyclecoord.coordinatevs." + invokerVsiId;
+		CoordinateVsiRequest internalMessage = new CoordinateVsiRequest(invokerVsiId, candidateVsis);
+		try {
+			sendMessageToQueue(internalMessage, topic);
+		} catch (JsonProcessingException e) {
+			log.error("Error while translating internal VS coordination message in Json format.");
+			vsRecordService.setVsFailureInfo(invokerVsiId, "Error while translating internal VS coordination message in Json format.");
+		}
+	}
 	
 	/**
 	 * This method starts the procedures to terminate a VSI, sending a message to 
@@ -188,7 +245,63 @@ public class Engine {
 			throw new NotExistingEntityException("Unable to find VS LCM Manager for VSI ID " + vsiId + ". Unable to terminate the VSI.");
 		}
 	}
-	
+
+	/**
+	 * This method is called by the VS Coordinator once it is notified for the termination of the last VSI in the
+	 * termination candidate list
+	 *
+	 * @param vsiId both Coordinator and VSI invoker ID
+	 * @throws NotExistingEntityException
+	 */
+	public void notifyVsCoordinationEnd(String vsiId) throws NotExistingEntityException {
+		log.debug("Processing end of Vs Coordination notification from Vs Coordinator ID " + vsiId);
+		if(vsCoordinators.containsKey(vsiId)){
+			// 1st step: destroy the coordinator
+			vsCoordinators.remove(vsiId);
+			// 2nd step: unlock the invoker VSI frozen in waiting_for_resource status
+			String topic = "lifecycle.resourcesgranted." + vsiId;
+			NotifyResourceGranted internalMessage = new NotifyResourceGranted(vsiId);
+			try {
+				sendMessageToQueue(internalMessage, topic);
+			} catch (JsonProcessingException e) {
+				log.error("Error while translating internal RESOURCES GRANTED message in Json format.");
+				vsRecordService.setVsFailureInfo(vsiId, "Error while translating internal RESOURCES GRANTED message in Json format.");
+			}
+		} else {
+			log.error("Unable to find VS Coordinator for VSI ID " + vsiId + ". Unable to instantiate the invoker VSI");
+			throw new NotExistingEntityException("Unable to find VS Coordinator for VSI ID " + vsiId + ". Unable to instantiate the invoker VSI");
+		}
+	}
+
+	/**
+	 * This methd is invoked by VsLcmManager as soon as its own termination process succeeded
+	 *
+	 * @param vsiId Id of terminated VSI
+	 * @throws NotExistingEntityException
+	 */
+	public void notifyVsiTermination(String vsiId) throws NotExistingEntityException {
+		log.debug("Processing VSI termination request for VSI ID " + vsiId);
+		if (vsLcmManagers.containsKey(vsiId)) {
+			log.debug("VSI " + vsiId + " TERMINATED");
+			for (Map.Entry<String, VsCoordinator> coordEntry: vsCoordinators.entrySet()){
+				VsCoordinator coordinator = coordEntry.getValue();
+				if(coordinator.getCandidateVsis().containsKey(vsiId)){
+					String topic = "lifecyclecoord.notifyterm." + coordEntry.getKey();
+					VsiTerminationNotificationMessage internalMessage = new VsiTerminationNotificationMessage(vsiId);
+					try {
+						sendMessageToQueue(internalMessage, topic);
+					} catch (JsonProcessingException e) {
+						log.error("Error while translating internal VSI TERMINATION notification message in Json format.");
+						vsRecordService.setVsFailureInfo(vsiId, "Error while translating internal VSI TERMINATION notification message in Json format.");
+					}
+				}
+			}
+		} else {
+			log.error("Unable to find VS LCM Manager for VSI ID " + vsiId + ". Invalid Termination notification.");
+			throw new NotExistingEntityException("Unable to find VS LCM Manager for VSI ID " + vsiId + ". Invalid Termination notification.");
+		}
+	}
+
 	/**
 	 * This method starts the procedures to instantiate a NSI, sending a message to 
 	 * the related NS LCM Manager
@@ -206,7 +319,16 @@ public class Engine {
 		log.debug("Processing new NSI instantiation request for NSI ID " + nsiId);
 		if (nsLcmManagers.containsKey(nsiId)) {
 			String topic = "nslifecycle.instantiatens." + nsiId;
-			InstantiateNsiRequestMessage internalMessage = new InstantiateNsiRequestMessage(nsiId, nsdId, nsdVersion, dfId, instantiationLevelId, nsSubnetIds);
+			Map<String, String> userData = new HashMap<>();
+			LocationInfo locationConstraints = null;
+			String ranEndPointId = null;
+			if (vsiId != null) {
+				VerticalServiceInstance vsi = vsRecordService.getVsInstance(vsiId);
+				userData = vsi.getUserData();
+				locationConstraints = vsi.getLocationConstraints();
+				ranEndPointId = vsi.getRanEndPointId();
+			}
+			InstantiateNsiRequestMessage internalMessage = new InstantiateNsiRequestMessage(nsiId, nsdId, nsdVersion, dfId, instantiationLevelId, nsSubnetIds, userData, locationConstraints, ranEndPointId);
 			try {
 				sendMessageToQueue(internalMessage, topic);
 			} catch (JsonProcessingException e) {
@@ -218,7 +340,38 @@ public class Engine {
 			throw new NotExistingEntityException("Unable to find NS LCM Manager for NSI ID " + nsiId + ". Unable to instantiate the NSI.");
 		}
 	}
-	
+
+	/**
+	 * This method starts the procedures to modify a NSI, sending a message to
+	 * the related NS LCM Manager
+	 *
+	 * @param nsiId ID of the NS instance to be instantiated
+	 * @param tenantId tenant owning the NS instance
+	 * @param nsdId NSD ID of the NFV NS that implements the NS instance
+	 * @param nsdVersion NSD version of the NFV NS that implements the NS instance
+	 * @param dfId DF ID of the NFV NS that implements the NS instance
+	 * @param instantiationLevelId instantiation level ID of the NFV NS that implements the NS instance
+	 * @param vsiId ID of the Vertical Service instance associated to the network slice, if available
+	 * @throws NotExistingEntityException if the NS LCM manager is not found
+	 */
+	public void modifyNs(String nsiId, String tenantId, String nsdId, String nsdVersion, String dfId, String instantiationLevelId, String vsiId)
+			throws NotExistingEntityException {
+		log.debug("Processing new NSI modification request for NSI ID " + nsiId);
+		if (nsLcmManagers.containsKey(nsiId)) {
+			String topic = "nslifecycle.modifyns." + nsiId;
+			ModifyNsiRequestMessage internalMessage = new ModifyNsiRequestMessage(nsiId, nsdId, nsdVersion, dfId, instantiationLevelId, vsiId);
+			try {
+				sendMessageToQueue(internalMessage, topic);
+			} catch (JsonProcessingException e) {
+				log.error("Error while translating internal NS modification message in Json format.");
+				if (vsiId != null) vsRecordService.setVsFailureInfo(vsiId, "Error while translating internal NS modification message in Json format.");
+			}
+		} else {
+			log.error("Unable to find Network Slice LCM Manager for NSI ID " + nsiId + ". Unable to modify the NSI.");
+			throw new NotExistingEntityException("Unable to find NS LCM Manager for NSI ID " + nsiId + ". Unable to modify the NSI.");
+		}
+	}
+
 	/**
 	 * This method starts the procedures to terminate a NSI, sending a message to 
 	 * the related NS LCM Manager
@@ -319,7 +472,31 @@ public class Engine {
 		String json = mapper.writeValueAsString(msg);
 		rabbitTemplate.convertAndSend(messageExchange.getName(), topic, json);
 	}
-	
+
+	/**
+	 *
+	 * @param vsCoordinatorId Id of the VsCoordinator (tentantId as candidate)
+	 * @param vsCoordinator VSI coordinator in charge of processing messages
+	 */
+	private void createQueue(String vsCoordinatorId, VsCoordinator vsCoordinator) {
+		String queueName = ConfigurationParameters.engineQueueNamePrefix + vsCoordinatorId;
+		log.debug("Creating new Queue " + queueName + " in rabbit host " + rabbitHost);
+		CachingConnectionFactory cf = new CachingConnectionFactory();
+		cf.setAddresses(rabbitHost);
+		cf.setConnectionTimeout(5);
+		RabbitAdmin rabbitAdmin = new RabbitAdmin(cf);
+		Queue queue = new Queue(queueName, false, false, true);
+		rabbitAdmin.declareQueue(queue);
+		rabbitAdmin.declareExchange(messageExchange);
+		rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(messageExchange).with("lifecyclecoord.*." + vsCoordinatorId));
+		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(cf);
+		MessageListenerAdapter adapter = new MessageListenerAdapter(vsCoordinator, "receiveMessage");
+		container.setMessageListener(adapter);
+		container.setQueueNames(queueName);
+		container.start();
+		log.debug("Queue created");
+	}
+
 	/**
 	 * This internal method creates a queue for the exchange of asynchronous messages
 	 * related to a given VSI. 

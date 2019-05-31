@@ -96,7 +96,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     private String baseUrl;
     
     private String instantiateNsTemplate =  "/ns/{nsid}/instantiate";
-    private String  nSStatusTemplate;
+	private String scaleNsTemplate = "/ns/{nsid}/scale";
+    private String nSStatusTemplate;
     private String getOperationStatusTemplate = "/operation/{operationid}";
     private Properties props = new Properties();
     private String terminateNsTemplate = "/ns/{nsid}/terminate";
@@ -104,6 +105,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     private String queryOnBoardedVnfPkgInfoResponseTemplate = "/ns/vnfd/{vnfdid}/{vnfdversion}";
     private String queryNsiStatusTemplate = "/ns/{nsiid}";
     private String onboardNsdTemplate = "/nsd";
+	private String onboardVnfd = "/ns/vnfdManagement/vnfPackage";
     
     public SMDriver(){
 
@@ -137,6 +139,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         log.info("createNsIdentifierTemplate: "+ createNsIdentifierTemplate);
         this.instantiateNsTemplate = props.getProperty("instantiate_ns", "/ns/{nsid}/instantiate");
         log.info("instantiateNsTemplate: "+ this.instantiateNsTemplate);
+		this.scaleNsTemplate = props.getProperty("scale_ns", "/ns/{nsid}/scale");
+		log.info("scaleNsTemplate: "+ this.scaleNsTemplate);
         this.getOperationStatusTemplate = props.getProperty("get_operation_status", "/operation/{operationid}");
         log.info("getOperationStatusTemplate: "+ this.getOperationStatusTemplate);
         this.terminateNsTemplate = props.getProperty("terminate_ns", "/ns/{nsid}/terminate");
@@ -197,10 +201,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     	log.info("Received call to onboardNsd, parameter {}.", onboardNsdRequest);
     	onboardNsdRequest.isValid(); 
     	log.info("onboardNsdRequest is valid!");
-    	this.restClient.onboardNsd(onboardNsdTemplate, onboardNsdRequest);
-        return "";
-        //throw new MethodNotImplementedException("not supported in SM.");
-        
+    	return this.restClient.onboardNsd(onboardNsdTemplate, onboardNsdRequest);
     }
 
     public void enableNsd(EnableNsdRequest enableNsdRequest) throws MethodNotImplementedException, MalformattedElementException, NotExistingEntityException, FailedOperationException {
@@ -259,39 +260,46 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     }
 
     public OnBoardVnfPackageResponse onBoardVnfPackage(OnBoardVnfPackageRequest onBoardVnfPackageRequest) throws MethodNotImplementedException, AlreadyExistingEntityException, FailedOperationException, MalformattedElementException {
-        //TODO
-    	log.warn("Received call to onBoardVnfPackage, parameter {}.", onBoardVnfPackageRequest);
-        onBoardVnfPackageRequest.isValid();
-        log.warn("Received call to onBoardVnfPackage name:", onBoardVnfPackageRequest.getName());
-        String vnfdId = "";
-        String onboardedVnfPkgInfoId = "";
-        try {
-        	String vnfPath = onBoardVnfPackageRequest.getVnfPackagePath();
-			String fileName = vnfPath.substring(vnfPath.lastIndexOf('/')+1);
-        	Process process = Runtime.getRuntime().exec("wget -P /tmp/ "+vnfPath);
-			processErrorLog(process);
-        	process = Runtime.getRuntime().exec("tar xf /tmp/"+fileName+" -C /tmp");
-			processErrorLog(process);
-        	String jsonFileName= fileName.substring(0,fileName.lastIndexOf('.')+1)+"json";
-			log.debug("JSON FILENAME:", jsonFileName);
+        //COMMENT: Following the swagger server format (R2) from the SM: 
+		log.info("Received call to onboardVnfPackage, parameter {}.", onBoardVnfPackageRequest);
+    	onBoardVnfPackageRequest.isValid(); 
+    	log.info("onboardNsdRequest is valid!");
+	    return this.restClient.onBoardVnfPackage(onboardVnfd, onBoardVnfPackageRequest); 
+	}
+		//Previous development for validating VNF Packages in SMDriver:
+		
+    	//log.warn("Received call to onBoardVnfPackage, parameter {}.", onBoardVnfPackageRequest);
+        //onBoardVnfPackageRequest.isValid();
+        //log.warn("Received call to onBoardVnfPackage name:", onBoardVnfPackageRequest.getName());
+        //String vnfdId = "";
+        //String onboardedVnfPkgInfoId = "";
+        //try {
+        	//String vnfPath = onBoardVnfPackageRequest.getVnfPackagePath();
+			//String fileName = vnfPath.substring(vnfPath.lastIndexOf('/')+1);
+        	//Process process = Runtime.getRuntime().exec("wget -P /tmp/ "+vnfPath);
+			//processErrorLog(process);
+        	//process = Runtime.getRuntime().exec("tar xf /tmp/"+fileName+" -C /tmp");
+			//processErrorLog(process);
+        	//String jsonFileName= fileName.substring(0,fileName.lastIndexOf('.')+1)+"json";
+			//log.debug("JSON FILENAME:", jsonFileName);
 			
-			String[] cmd = {
-					"/bin/bash",
-					"-c",
-					"cat /tmp/"+jsonFileName+" | jq -r '.vnfdId'"
-					};
-			process = Runtime.getRuntime().exec(cmd);
-			processErrorLog(process);
-			BufferedReader input =  new BufferedReader  
-				          (new InputStreamReader(process.getInputStream()));
-			 vnfdId = input.readLine();
-			 log.debug("obtained vnfdId:", vnfdId);
-		} catch (IOException e) {
-			log.error(e.getMessage());
-		}
-        return new OnBoardVnfPackageResponse(vnfdId,onboardedVnfPkgInfoId);
+			//String[] cmd = {
+				//	"/bin/bash",
+					//"-c",
+					//"cat /tmp/"+jsonFileName+" | jq -r '.vnfdId'"
+					//};
+			//process = Runtime.getRuntime().exec(cmd);
+			//processErrorLog(process);
+			//BufferedReader input =  new BufferedReader  
+				//          (new InputStreamReader(process.getInputStream()));
+			 //vnfdId = input.readLine();
+			 //log.debug("obtained vnfdId:", vnfdId);
+		//} catch (IOException e) {
+			//log.error(e.getMessage());
+		//}
+        //return new OnBoardVnfPackageResponse(vnfdId,onboardedVnfPkgInfoId);
         //throw new MethodNotImplementedException("not supported in SM.");
-    }
+    //}
     
     private void processErrorLog(Process process) throws IOException {
     	InputStream stderr = process.getErrorStream ();
@@ -312,7 +320,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         log.info("Received call to disableVnfPackage, parameter {}.", disableVnfPackageRequest);
         throw new MethodNotImplementedException("not supported in SM.");
     }
-
+    //TODO: DeleteNsdRequest class has no filter, the way to access to nsdVersion.
     public void deleteVnfPackage(DeleteVnfPackageRequest deleteVnfPackageRequest) throws MethodNotImplementedException, NotExistingEntityException, FailedOperationException, MalformattedElementException {
         log.info("Received call to deleteVnfPackage, parameter {}.", deleteVnfPackageRequest);
         throw new MethodNotImplementedException("not supported in SM.");
@@ -361,15 +369,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     public String instantiateNs(InstantiateNsRequest instantiateNsRequest) throws MethodNotImplementedException, NotExistingEntityException, FailedOperationException, MalformattedElementException {
         log.info("Received call to instantiateNs, parameter {}.", instantiateNsRequest);
         	
-        String operationId =  this.restClient.instantiateNs(this.instantiateNsTemplate, instantiateNsRequest).getOperationId();
+        	String operationId =  this.restClient.instantiateNs(this.instantiateNsTemplate, instantiateNsRequest).getOperationId();
         nfvoOperationPollingManager.addOperation(operationId, OperationStatus.SUCCESSFULLY_DONE, instantiateNsRequest.getNsInstanceId(), "NS_INSTANTIATION");
 		log.debug("Added polling task for NFVO operation " + operationId);
         return operationId;
     }
 
     public String scaleNs(ScaleNsRequest scaleNsRequest) throws MethodNotImplementedException, NotExistingEntityException, FailedOperationException, MalformattedElementException {
-        log.info("Received call to scaleNs, parameter {}.", scaleNsRequest);
-        throw new MethodNotImplementedException("not supported in SM.");
+	    log.info("Received call to scaleNs, parameter {}.", scaleNsRequest);
+        String operationId =  this.restClient.scaleNs(this.scaleNsTemplate, scaleNsRequest).getOperationId();
+        nfvoOperationPollingManager.addOperation(operationId, OperationStatus.SUCCESSFULLY_DONE, scaleNsRequest.getNsInstanceId(), "NS_SCALING");
+        log.debug("Added polling task for NFVO operation " + operationId);
+        return operationId;
     }
 
     public UpdateNsResponse updateNs(UpdateNsRequest updateNsRequest) throws MethodNotImplementedException, NotExistingEntityException, FailedOperationException, MalformattedElementException {
@@ -389,7 +400,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 		log.debug("Added polling task for NFVO operation " + operationId);
         return operationId;
     }
-
+//TODO: DeleteNsdRequest class has no filter, the way to access to nsdVersion.
     public void deleteNsIdentifier(String s) throws MethodNotImplementedException, NotExistingEntityException, FailedOperationException {
         log.info("Received call to deleteNsIdentifier, parameter {}.", s);
         throw new MethodNotImplementedException("not supported in SM.");

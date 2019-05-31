@@ -15,7 +15,7 @@ Then run the `install_libs.sh` script giving as argument the desired parent fold
 
 ### 2.Build the application
 
-In the `<repo-root>/sebastian` folder, run 
+In the `<repo-root>` folder, run 
 ```mvn clean install```
 
 A jar file (`Sebastian-<version>-<release-type>.jar`) will be generated in the `<repo-root>/SEBASTIAN/target` folder.
@@ -26,13 +26,6 @@ This is a portable jar, containing everything needed by the application, and can
 After building the application, in the `<repo-root>/SEBASTIAN/target` folder, run
 
 $ java -jar Sebastian-<version>-<release-type>.jar
-
-### 3.1.Application configuration
-
-The application's default configuration is in the ```<root>/sebastian/SEBASTIAN/src/main/resources/application.properties``` file.
-In order to change some of the values, you can create a file named application.properties in the folder from where you will run the jar.
-The values contained in this file will overwrite the corresponding default values (you can specify just some of the values).
-For more details, see [https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html]
 
 ### 4.Credentials
 

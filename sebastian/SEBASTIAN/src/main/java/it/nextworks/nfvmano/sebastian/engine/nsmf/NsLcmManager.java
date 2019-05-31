@@ -18,10 +18,13 @@ package it.nextworks.nfvmano.sebastian.engine.nsmf;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import it.nextworks.nfvmano.libs.common.enums.NsScaleType;
 import it.nextworks.nfvmano.libs.common.exceptions.NotExistingEntityException;
-import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.QueryNsResponse;
+import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.*;
 import it.nextworks.nfvmano.libs.records.nsinfo.NsInfo;
+import it.nextworks.nfvmano.sebastian.engine.messages.*;
 import it.nextworks.nfvmano.sebastian.record.elements.NetworkSliceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,18 +37,12 @@ import it.nextworks.nfvmano.libs.catalogues.interfaces.elements.NsdInfo;
 import it.nextworks.nfvmano.libs.common.messages.GeneralizedQueryRequest;
 import it.nextworks.nfvmano.libs.descriptors.nsd.Nsd;
 import it.nextworks.nfvmano.libs.descriptors.nsd.Sapd;
+import it.nextworks.nfvmano.libs.descriptors.nsd.ScaleNsToLevelData;
+import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.elements.LocationInfo;
 import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.elements.SapData;
-import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.CreateNsIdentifierRequest;
-import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.InstantiateNsRequest;
-import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.TerminateNsRequest;
+import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.elements.ScaleNsData;
 import it.nextworks.nfvmano.sebastian.common.Utilities;
 import it.nextworks.nfvmano.sebastian.engine.Engine;
-import it.nextworks.nfvmano.sebastian.engine.messages.EngineMessage;
-import it.nextworks.nfvmano.sebastian.engine.messages.EngineMessageType;
-import it.nextworks.nfvmano.sebastian.engine.messages.InstantiateNsiRequestMessage;
-import it.nextworks.nfvmano.sebastian.engine.messages.NotifyNfvNsiStatusChange;
-import it.nextworks.nfvmano.sebastian.engine.messages.NsStatusChange;
-import it.nextworks.nfvmano.sebastian.engine.messages.TerminateNsiRequestMessage;
 import it.nextworks.nfvmano.sebastian.nfvodriver.NfvoService;
 import it.nextworks.nfvmano.sebastian.record.VsRecordService;
 import it.nextworks.nfvmano.sebastian.record.elements.NetworkSliceStatus;
@@ -74,6 +71,8 @@ public class NsLcmManager {
 	private Engine engine;
 	
 	private NetworkSliceStatus internalStatus;
+
+	private String requestedInstantiationLevelId;
 	
 	public NsLcmManager(String networkSliceInstanceId,
 			String name,
@@ -112,7 +111,13 @@ public class NsLcmManager {
 				processInstantiateRequest(instantiateVsRequestMsg);
 				break;
 			}
-			
+
+			case MODIFY_NSI_REQUEST: {
+				log.debug("Processing NSI modification request.");
+				ModifyNsiRequestMessage modifyNsiRequestMessage = (ModifyNsiRequestMessage)em;
+                processModifyRequest(modifyNsiRequestMessage);
+				break;
+			}
 			case TERMINATE_NSI_REQUEST: {
 				log.debug("Processing NSI termination request.");
 				TerminateNsiRequestMessage terminateVsRequestMsg = (TerminateNsiRequestMessage)em;
@@ -167,14 +172,30 @@ public class NsLcmManager {
 			
 			log.debug("Building NFV NS instantiation request");
 			
+			String ranEndPointId = null;
+			LocationInfo locationInfo = msg.getLocationConstraints();
+			if (locationInfo.isMeaningful()) {
+				ranEndPointId = msg.getRanEndPointId();
+			}
+			
 			List<Sapd> saps = nsd.getSapd();
 			List<SapData> sapData = new ArrayList<>();
 			for (Sapd sap : saps) {
-				SapData sData = new SapData(sap.getCpdId(), 							//SAPD ID
-						"SAP-" + name + "-" + sap.getCpdId(),							//name 
-						"SAP " + sap.getCpdId() + " for Network Slice " + name, 		//description
-						null,															//address
-						null);															//locationInfo
+				SapData sData = null;
+				if (sap.getCpdId().equals(ranEndPointId)) {
+					sData = new SapData(sap.getCpdId(), 								//SAPD ID
+							"SAP-" + name + "-" + sap.getCpdId(),						//name 
+							"SAP " + sap.getCpdId() + " for Network Slice " + name, 	//description
+							null,														//address
+							locationInfo);												//locationInfo
+					log.debug("Set location constraints for SAP " + sap.getCpdId());
+				} else {
+					sData = new SapData(sap.getCpdId(), 							//SAPD ID
+						"SAP-" + name + "-" + sap.getCpdId(),						//name 
+						"SAP " + sap.getCpdId() + " for Network Slice " + name, 	//description
+						null,														//address
+						null);														//locationInfo
+				}
 				sapData.add(sData);
 			}
 			log.debug("Completed SAP Data");
@@ -191,6 +212,9 @@ public class NsLcmManager {
 			 * The nested Nsi are found by the Arbitrator -> they are ALREADY on DB
 			 */
 
+			//Read configuration parameters
+			Map<String, String> additionalParamForNs = msg.getUserData();
+			
 			String operationId = nfvoService.instantiateNs(new InstantiateNsRequest(nfvNsId, 
 					dfId, 					//flavourId 
 					sapData, 				//sapData
@@ -198,7 +222,7 @@ public class NsLcmManager {
 					null,					//vnfInstanceData
 					nestedNfvNsId,			//nestedNsInstanceId 
 					null,					//locationConstraints 
-					null,					//additionalParamForNs 
+					additionalParamForNs,	//additionalParamForNs 
 					null,					//additionalParamForVnf 
 					null,					//startTime
 					ilId,					//nsInstantiationLevelId
@@ -210,9 +234,46 @@ public class NsLcmManager {
 			manageNsError(e.getMessage());
 		}
 	}
-	
-	 void processNfvNsChangeNotification(NotifyNfvNsiStatusChange msg) {
-		if (! ((internalStatus == NetworkSliceStatus.INSTANTIATING) || (internalStatus == NetworkSliceStatus.TERMINATING))) {
+
+	void processModifyRequest(ModifyNsiRequestMessage msg){
+		if (internalStatus != NetworkSliceStatus.INSTANTIATED) {
+			manageNsError("Received modification request in wrong status. Skipping message.");
+			return;
+		}
+		else if (!msg.getNsiId().equals(networkSliceInstanceId)){
+			manageNsError("Received modification request with wrong nsiId " + msg.getNsiId());
+			return;
+		}
+		log.debug("Modifying network slice " + networkSliceInstanceId);
+		this.internalStatus = NetworkSliceStatus.UNDER_MODIFICATION;
+		vsRecordService.setNsStatus(networkSliceInstanceId, NetworkSliceStatus.UNDER_MODIFICATION);
+		log.debug("Sending request to modify NFV network service " + nfvNsiInstanceId);
+		try {
+			ScaleNsToLevelData scaleNsToLevelData = new ScaleNsToLevelData(msg.getIlId(), null);
+			ScaleNsData scaleNsData = new ScaleNsData(null, 
+					null, 
+					null, 
+					scaleNsToLevelData, 
+					null, 
+					null, 
+					null);
+			ScaleNsRequest scaleReq = new ScaleNsRequest(nfvNsiInstanceId, 
+					NsScaleType.SCALE_NS, 
+					scaleNsData, 
+					null, 
+					null);
+			String operationId = nfvoService.scaleNs(scaleReq);
+			log.debug("Sent request to NFVO service for modifying NFV NS " + nfvNsiInstanceId + ": operation ID " + operationId);
+			//Save the requested instantiation level id in an auxiliary attribute
+			requestedInstantiationLevelId = msg.getIlId();
+		} catch (Exception e) {
+			manageNsError(e.getMessage());
+		}
+
+	}
+
+	void processNfvNsChangeNotification(NotifyNfvNsiStatusChange msg) {
+		if (! ((internalStatus == NetworkSliceStatus.INSTANTIATING) || (internalStatus == NetworkSliceStatus.TERMINATING) || (internalStatus == NetworkSliceStatus.UNDER_MODIFICATION))) {
 			manageNsError("Received notification about NFV NS status change in wrong status.");
 			return;
 		}
@@ -223,52 +284,61 @@ public class NsLcmManager {
 		try{
 			if (msg.isSuccessful()) {
 				switch (internalStatus) {
-				case INSTANTIATING: {
-					log.debug("Successful instantiation of NFV NS " + msg.getNfvNsiId() + " and network slice " + networkSliceInstanceId);
-					this.internalStatus=NetworkSliceStatus.INSTANTIATED;
+					case INSTANTIATING: {
+						log.debug("Successful instantiation of NFV NS " + msg.getNfvNsiId() + " and network slice " + networkSliceInstanceId);
+						this.internalStatus=NetworkSliceStatus.INSTANTIATED;
 
-					//If the network slice includes slice subnets, update or create the related entries
-					//Note that some subnets can be explicit (i.e. VS-managed, so already available in db) or implicit (i.e. SO-managed, so you need to create a new entry in this phase if not yet present)
-					//You need to read the NS info from the NFVO
+						//If the network slice includes slice subnets, update or create the related entries
+						//Note that some subnets can be explicit (i.e. VS-managed, so already available in db) or implicit (i.e. SO-managed, so you need to create a new entry in this phase if not yet present)
+						//You need to read the NS info from the NFVO
 
-					QueryNsResponse queryNs = nfvoService.queryNs(new GeneralizedQueryRequest(Utilities.buildNfvNsiFilter(msg.getNfvNsiId()), null));
-					NsInfo nsInfo = queryNs.getQueryNsResult().get(0);
-					List<String> nfvNsIds = nsInfo.getNestedNsInfoId();
-					for (String nfvNsId : nfvNsIds){
-						try{
-							vsRecordService.getNsInstanceFromNfvNsi(nfvNsId);
-						}catch (NotExistingEntityException e){
-							String nestedNsiId = vsRecordService.createNetworkSliceInstanceEntry(null,
-                                    null, null, null, nfvNsId, null,
-                                    null, null, null, true);
-						    soNestedNsiIds.add(nestedNsiId);
-							vsRecordService.setNsStatus(nestedNsiId, NetworkSliceStatus.INSTANTIATED);
+						QueryNsResponse queryNs = nfvoService.queryNs(new GeneralizedQueryRequest(Utilities.buildNfvNsiFilter(msg.getNfvNsiId()), null));
+						NsInfo nsInfo = queryNs.getQueryNsResult().get(0);
+						List<String> nfvNsIds = nsInfo.getNestedNsInfoId();
+						for (String nfvNsId : nfvNsIds){
+							try{
+								vsRecordService.getNsInstanceFromNfvNsi(nfvNsId);
+							}catch (NotExistingEntityException e){
+								String nestedNsiId = vsRecordService.createNetworkSliceInstanceEntry(null,
+										null, null, null, nfvNsId, null,
+										null, null, null, true);
+								soNestedNsiIds.add(nestedNsiId);
+								vsRecordService.setNsStatus(nestedNsiId, NetworkSliceStatus.INSTANTIATED);
+							}
 						}
+						if (soNestedNsiIds.size() >0 )
+							vsRecordService.addNsSubnetsInNetworkSliceInstance(networkSliceInstanceId, soNestedNsiIds);
+
+						vsRecordService.setNsStatus(networkSliceInstanceId, NetworkSliceStatus.INSTANTIATED);
+						log.debug("Sending notification to engine.");
+						engine.notifyNetworkSliceStatusChange(networkSliceInstanceId, NsStatusChange.NS_CREATED, true);
+						break;
 					}
-					if (soNestedNsiIds.size() >0 )
-					    vsRecordService.addNsSubnetsInNetworkSliceInstance(networkSliceInstanceId, soNestedNsiIds);
+					case UNDER_MODIFICATION: {
+						log.debug("Successful modification of NFV NS " + msg.getNfvNsiId() + " and network slice " + networkSliceInstanceId);
+						this.internalStatus=NetworkSliceStatus.INSTANTIATED;
+						//TODO check on requestedInstantiationLevelId
+						vsRecordService.updateNsInstantiationLevelAfterScaling(networkSliceInstanceId, requestedInstantiationLevelId);
+						vsRecordService.setNsStatus(networkSliceInstanceId, NetworkSliceStatus.INSTANTIATED);
+						engine.notifyNetworkSliceStatusChange(networkSliceInstanceId, NsStatusChange.NS_MODIFIED, true);
+						break;
+					}
 
-					vsRecordService.setNsStatus(networkSliceInstanceId, NetworkSliceStatus.INSTANTIATED);
-					log.debug("Sending notification to engine.");
-					engine.notifyNetworkSliceStatusChange(networkSliceInstanceId, NsStatusChange.NS_CREATED, true);
-					return;
-				}
+					case TERMINATING: {
+						log.debug("Successful termination of NFV NS " + msg.getNfvNsiId() + " and network slice " + networkSliceInstanceId);
+						//TODO: should we also remove the NS instance ID from the NFVO?
+						for (String soManagedNsiId : soNestedNsiIds){
+							vsRecordService.setNsStatus(soManagedNsiId, NetworkSliceStatus.TERMINATED);
+						}
+						this.internalStatus=NetworkSliceStatus.TERMINATED;
+						vsRecordService.setNsStatus(networkSliceInstanceId, NetworkSliceStatus.TERMINATED);
+						log.debug("Sending notification to engine.");
+						engine.notifyNetworkSliceStatusChange(networkSliceInstanceId, NsStatusChange.NS_TERMINATED, true);
+						break;
+					}
 
-				case TERMINATING: {
-					log.debug("Successful termination of NFV NS " + msg.getNfvNsiId() + " and network slice " + networkSliceInstanceId);
-					//TODO: should we also remove the NS instance ID from the NFVO?
-                    for (String soManagedNsiId : soNestedNsiIds){
-                        vsRecordService.setNsStatus(soManagedNsiId, NetworkSliceStatus.TERMINATED);
-                    }
-					this.internalStatus=NetworkSliceStatus.TERMINATED;
-					vsRecordService.setNsStatus(networkSliceInstanceId, NetworkSliceStatus.TERMINATED);
-					log.debug("Sending notification to engine.");
-					engine.notifyNetworkSliceStatusChange(networkSliceInstanceId, NsStatusChange.NS_TERMINATED, true);
-					return;
-				}	
-
-				default:
-					break;
+					default:
+						break;
 				}
 			} else {
 				log.error("The operation associated to NFV network service " + msg.getNfvNsiId() + " has failed.");

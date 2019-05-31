@@ -81,6 +81,12 @@
             <artifactId>NfvManoLibsIfa13NsLcmIf</artifactId>
             <version>0.0.2-SNAPSHOT</version>
         </dependency>
+      
+        <dependency>
+            <groupId>it.nextworks.nfvmano</groupId>
+            <artifactId>NfvManoLibsPolicyMgtIf</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>it.nextworks.nfvmano</groupId>
@@ -93,13 +99,11 @@
             <artifactId>logging-nfvo-driver</artifactId>
             <version>0.0.2-SNAPSHOT</version>
         </dependency>
-
-        <dependency>
+		<dependency>
             <groupId>it.nextworks.nfvmano</groupId>
             <artifactId>sm-driver</artifactId>
             <version>0.0.2-SNAPSHOT</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -151,6 +155,18 @@
                 <!-- /fix -->
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.5.1</version>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 

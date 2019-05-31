@@ -62,6 +62,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.CreateNsIdentifierRequest;
 import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.InstantiateNsRequest;
+import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.ScaleNsRequest;
 import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.QueryNsResponse;
 import it.nextworks.nfvmano.libs.osmanfvo.nslcm.interfaces.messages.TerminateNsRequest;
 
@@ -193,6 +194,50 @@ import it.nextworks.nfvmano.nfvodriver.sm.messages.*;
 				throw new FailedOperationException("Generic error on NFVO during NS instantiation");
 			}
 			
+		} catch (RestClientException e) {
+			log.debug("Error while interacting with NFVO.");
+			throw new FailedOperationException("Error while interacting with NFVO LCM at url " + url);
+		}
+	}
+	
+	/// R2 feature: SCALE NS ///
+	
+	public OperationResponse scaleNs(String urlTemplate, ScaleNsRequest request) throws NotExistingEntityException, FailedOperationException, MalformattedElementException {
+		String nsId = request.getNsInstanceId();
+		log.debug("Building HTTP request to scale NS instance " + nsId);
+
+		HttpHeaders header = new HttpHeaders();
+		header.add("Content-Type", "application/json");
+		HttpEntity<?> putEntity = new HttpEntity<>(request, header);
+		String url = smUrl + urlTemplate.replaceAll("\\{nsid\\}", nsId);
+		log.debug("scaleNS: "+url);
+		try {
+			log.debug("Sending HTTP request to scale NS.");
+			ResponseEntity<String> httpResponse =
+					restTemplate.exchange(url, HttpMethod.PUT, putEntity, String.class);
+
+			log.debug("Response code: " + httpResponse.getStatusCode().toString());
+			HttpStatus code = httpResponse.getStatusCode();
+
+			if (code.equals(HttpStatus.OK)) {
+
+				OperationResponse response=null;
+				try{
+					response = new ObjectMapper().readValue(httpResponse.getBody(), OperationResponse.class);
+					log.debug("Scaled NS Instance OperationId: " + response.getOperationId());
+				}catch(IOException e1){
+					log.warn(e1.getMessage());
+				}
+				return response;
+
+			} else if (code.equals(HttpStatus.NOT_FOUND)) {
+				throw new NotExistingEntityException("Error during NS escalation at NFVO: " + httpResponse.getBody());
+			} else if (code.equals(HttpStatus.BAD_REQUEST)) {
+				throw new MalformattedElementException("Error during NS escalation at NFVO: " + httpResponse.getBody());
+			} else {
+				throw new FailedOperationException("Generic error on NFVO during NS escalation");
+			}
+
 		} catch (RestClientException e) {
 			log.debug("Error while interacting with NFVO.");
 			throw new FailedOperationException("Error while interacting with NFVO LCM at url " + url);
@@ -371,11 +416,11 @@ import it.nextworks.nfvmano.nfvodriver.sm.messages.*;
 		HttpEntity<?> postEntity = new HttpEntity<>(request, header);
 		
 		String url = this.smUrl+urlTemplate;
-		log.debug("Sending HTTP request to onboard NSD.");
-		return "";
-		/*try {
+		
+		
+		try {
 			
-			
+			log.debug("Sending HTTP request to onboard NSD.");
 			ResponseEntity<String> httpResponse =
 					restTemplate.exchange(url, HttpMethod.POST, postEntity, String.class);
 			
@@ -397,7 +442,7 @@ import it.nextworks.nfvmano.nfvodriver.sm.messages.*;
 		} catch (RestClientException e) {
 			log.debug("error while interacting with NFVO.");
 			throw new FailedOperationException("Error while interacting with NFVO NSD catalogue at url " + url);
-		}*/
+		}
 	}
 	
 	public String onboardPnfd(String urlTemplate, OnboardPnfdRequest request) throws MalformattedElementException, AlreadyExistingEntityException, FailedOperationException {
@@ -530,7 +575,7 @@ import it.nextworks.nfvmano.nfvodriver.sm.messages.*;
 		header.add("Content-Type", "application/json");
 		HttpEntity<?> postEntity = new HttpEntity<>(request, header);
 		
-		String url = urlTemplate + "/vnfPackage";
+		String url = urlTemplate;
 		
 		try {
 			log.debug("Sending HTTP request to onboard VNF package.");

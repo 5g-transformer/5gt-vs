@@ -23,6 +23,8 @@ import javax.annotation.PostConstruct;
 
 import it.nextworks.nfvmano.libs.catalogues.interfaces.elements.NsdInfo;
 import it.nextworks.nfvmano.nfvodriver.logging.LoggingDriver;
+import it.nextworks.nfvmano.nfvodriver.nfvopoller.NfvoOperationPollingManager;
+import it.nextworks.nfvmano.nfvodriver.sm.SMDriver;
 import it.nextworks.nfvmano.sebastian.admin.elements.VirtualResourceUsage;
 import it.nextworks.nfvmano.sebastian.common.Utilities;
 import it.nextworks.nfvmano.sebastian.nfvodriver.timeo.TimeoDriver;
@@ -119,6 +121,9 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 	@Autowired
 	TimeoNfvoOperationPollingManager timeoNfvoOperationPollingManager;
 
+	@Autowired
+	NfvoOperationPollingManager nfvoOperationPollingManager;
+
 	public NfvoService() {	}
 
 	@PostConstruct
@@ -127,6 +132,9 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 		if (nfvoType.equals("TIMEO")) {
 			log.debug("The Vertical Slicer is configured to operate over the TIMEO orchestrator.");
 			nfvoDriver = new TimeoDriver(nfvoAddress, nfvoNotificationManager, timeoNfvoOperationPollingManager);
+		} else if (nfvoType.equals("SM")) {
+			log.debug("The Vertical Slicer is configured to operate over the 5GT-SO orchestrator.");
+			nfvoDriver = new SMDriver(nfvoAddress, nfvoOperationPollingManager);
 		} else if (nfvoType.equals("OSM")) {
 			log.debug("The Vertical Slicer is configured to operate over the OSM orchestrator.");
 			nfvoDriver = new OsmDriver(nfvoAddress, nfvoNotificationManager);
@@ -141,8 +149,16 @@ MecAppPackageManagementProviderInterface, NsdManagementProviderInterface, VnfPac
 		}
 	}
 
-	public VirtualResourceUsage computeVirtualResourceUsage(NetworkSliceInstance nsi) throws Exception {
-		return computeVirtualResourceUsage(nsi.getNsInstantiationInfo());
+        /**
+         * This method computes the amount of virtual resources consumed by a network slice with the current or previous instantiation level.
+         * 
+         * @param nsi ID of the network slice instance
+         * @param current true if it refers to the current instantiation level
+         * @return the amount of consumed virtual resources
+         * @throws Exception
+         */
+        public VirtualResourceUsage computeVirtualResourceUsage(NetworkSliceInstance nsi, boolean current) throws Exception {
+                return computeVirtualResourceUsage(nsi.getNsInstantiationInfo(current));
 	}
 
 	/**

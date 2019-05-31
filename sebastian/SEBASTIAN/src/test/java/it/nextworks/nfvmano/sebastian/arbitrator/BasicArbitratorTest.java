@@ -1,3 +1,18 @@
+/*
+* Copyright 2018 Nextworks s.r.l.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package it.nextworks.nfvmano.sebastian.arbitrator;
 
 import it.nextworks.nfvmano.libs.catalogues.interfaces.elements.NsdInfo;
@@ -7,6 +22,7 @@ import it.nextworks.nfvmano.sebastian.admin.elements.Sla;
 import it.nextworks.nfvmano.sebastian.admin.elements.SlaVirtualResourceConstraint;
 import it.nextworks.nfvmano.sebastian.admin.elements.Tenant;
 import it.nextworks.nfvmano.sebastian.admin.elements.VirtualResourceUsage;
+import it.nextworks.nfvmano.sebastian.catalogue.VsDescriptorCatalogueService;
 import it.nextworks.nfvmano.sebastian.engine.Engine;
 import it.nextworks.nfvmano.sebastian.nfvodriver.NfvoService;
 import it.nextworks.nfvmano.sebastian.record.VsRecordService;
@@ -26,6 +42,7 @@ public class BasicArbitratorTest {
 
     NfvoService nfvoMock;
     VsRecordService vsRecordServiceMock;
+    VsDescriptorCatalogueService vsDescriptorCatalogueMock;
     Engine engineMock;
     NsdInfo nsdInfoMock;
     AdminService adminServiceMock;
@@ -51,6 +68,7 @@ public class BasicArbitratorTest {
         this.tenantMock = mock(Tenant.class);
         this.tenantSlaMock = mock(Sla.class);
         this.scMock = mock(SlaVirtualResourceConstraint.class);
+        this.vsDescriptorCatalogueMock = mock(VsDescriptorCatalogueService.class);
 
     }
 
@@ -70,7 +88,7 @@ public class BasicArbitratorTest {
 
         BasicArbitrator basicArbitrator = new BasicArbitrator(this.adminServiceMock,
                 this.vsRecordServiceMock,
-                this.translatorServiceMock,
+                this.vsDescriptorCatalogueMock, this.translatorServiceMock,
                 this.nfvoMock);
 
         List<ArbitratorRequest> request = new ArrayList<>();
