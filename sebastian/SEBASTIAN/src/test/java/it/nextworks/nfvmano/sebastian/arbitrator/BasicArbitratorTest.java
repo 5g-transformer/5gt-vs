@@ -16,6 +16,8 @@
 package it.nextworks.nfvmano.sebastian.arbitrator;
 
 import it.nextworks.nfvmano.libs.catalogues.interfaces.elements.NsdInfo;
+import it.nextworks.nfvmano.libs.descriptors.nsd.NsDf;
+import it.nextworks.nfvmano.libs.descriptors.nsd.NsProfile;
 import it.nextworks.nfvmano.libs.descriptors.nsd.Nsd;
 import it.nextworks.nfvmano.sebastian.admin.AdminService;
 import it.nextworks.nfvmano.sebastian.admin.elements.Sla;
@@ -49,6 +51,8 @@ public class BasicArbitratorTest {
     TranslatorService translatorServiceMock;
     ArbitratorRequest arbitratorRequestMock;
     Nsd nsdMock;
+    NsDf nsDfMock;
+    NsProfile nsProfile;
     NetworkSliceInstance networkSliceInstanceMock;
     Tenant tenantMock;
     Sla tenantSlaMock;
@@ -64,6 +68,9 @@ public class BasicArbitratorTest {
         this.translatorServiceMock = mock(TranslatorService.class);
         this.arbitratorRequestMock = mock(ArbitratorRequest.class);
         this.nsdMock = mock(Nsd.class);
+        this.nsDfMock = mock(NsDf.class);
+        this.nsProfile = mock (NsProfile.class);
+
         this.networkSliceInstanceMock = mock(NetworkSliceInstance.class);
         this.tenantMock = mock(Tenant.class);
         this.tenantSlaMock = mock(Sla.class);
@@ -98,6 +105,11 @@ public class BasicArbitratorTest {
         when(arbitratorRequestMock.getInstantiationNsd()).thenReturn(nsInitInfos);
         when(nfvoMock.queryNsdAssumingOne(any(), any())).thenReturn(this.nsdMock);
         when(nsdMock.getNestedNsdId()).thenReturn(Collections.singletonList("nestedID"));
+        when(nsProfile.getNsdId()).thenReturn("nestedID");
+        when(nsProfile.getNsDeploymentFlavourId()).thenReturn("nestedDF");
+        when(nsProfile.getNsInstantiationLevelId()).thenReturn("nestedIL");
+        when(nsdMock.getNsDeploymentFlavour("deploymentFlavour")).thenReturn(nsDfMock);
+        when(nsDfMock.getNsProfile()).thenReturn(Arrays.asList(nsProfile));
         when(networkSliceInstanceMock.getNsiId()).thenReturn("nestedNsi");
         when(vsRecordServiceMock.getUsableSlices(any(), any(), any(), any(), any())).thenReturn(nsis);
         when(nfvoMock.computeVirtualResourceUsage(any(NfvNsInstantiationInfo.class))).thenReturn(new VirtualResourceUsage());

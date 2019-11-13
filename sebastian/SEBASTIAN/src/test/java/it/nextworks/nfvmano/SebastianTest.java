@@ -125,17 +125,25 @@ public class SebastianTest {
                 "NotificationUrl",
                 null,
                 null);
-        NfvNsInstantiationInfo nsInstantiationInfo = new NfvNsInstantiationInfo(
+        /*NfvNsInstantiationInfo nsInstantiationInfo = new NfvNsInstantiationInfo(
                 nsdMock.getNsdIdentifier(),
                 nsdMock.getVersion(),
                 "deploymentFlavour",
                 "instatiationLevelId");
-        
+        */
+
+        String deploymentFlavor= nsdMock.getNsdIdentifier()+"_df";
+        String instantiationLevel = nsdMock.getNsDeploymentFlavour(deploymentFlavor).getNsInstantiationLevel().get(0).getNsLevelId();
+        NfvNsInstantiationInfo nsInstantiationInfo = new NfvNsInstantiationInfo(
+                nsdMock.getNsdIdentifier(),
+                nsdMock.getVersion(),
+                deploymentFlavor,
+                instantiationLevel);
         List<VsdNsdTranslationRule> translationRules = new ArrayList<>();
         List<VsdParameterValueRange> pvrs = new ArrayList<>();
         VsdParameterValueRange pvr = new VsdParameterValueRange("parameterId", 0, 1);
         pvrs.add(pvr);
-        VsdNsdTranslationRule rule = new VsdNsdTranslationRule(pvrs, "nsdId", "nsdVersion", "nsFlavourId", "nsInstantiationLevelId");
+        VsdNsdTranslationRule rule = new VsdNsdTranslationRule(pvrs, "nsdId", "nsdVersion", deploymentFlavor, instantiationLevel);
         translationRules.add(rule);
         VsBlueprint vsb = new VsBlueprint(null, "0.1", "VsbName", null, null, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         OnBoardVsBlueprintRequest request = new OnBoardVsBlueprintRequest(vsb, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), translationRules);
@@ -213,7 +221,8 @@ public class SebastianTest {
          */
 
         nsdMock = new TestNsds().makeHealtEmergencyNsd();
-
+        deploymentFlavor= nsdMock.getNsdIdentifier()+"_df";
+        instantiationLevel = nsdMock.getNsDeploymentFlavour(deploymentFlavor).getNsInstantiationLevel().get(0).getNsLevelId();
         instantiateVsRequest = new InstantiateVsRequest(
                 "vsParentName",
                 "vsParentDescription",
@@ -222,12 +231,17 @@ public class SebastianTest {
                 "ParentNotificationUrl",
                 null,
                 null);
-        nsInstantiationInfo = new NfvNsInstantiationInfo(
+        /*nsInstantiationInfo = new NfvNsInstantiationInfo(
                 nsdMock.getNsdIdentifier(),
                 nsdMock.getVersion(),
                 "deploymentFlavour",
                 "instatiationLevelId");
-
+    */
+        nsInstantiationInfo = new NfvNsInstantiationInfo(
+                nsdMock.getNsdIdentifier(),
+                nsdMock.getVersion(),
+                deploymentFlavor,
+                instantiationLevel);
         /**
          * VsLcmService
          */

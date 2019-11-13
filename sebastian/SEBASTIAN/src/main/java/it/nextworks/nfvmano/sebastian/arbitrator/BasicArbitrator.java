@@ -15,11 +15,9 @@
 */
 package it.nextworks.nfvmano.sebastian.arbitrator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import it.nextworks.nfvmano.libs.descriptors.nsd.NsProfile;
 import it.nextworks.nfvmano.libs.descriptors.nsd.Nsd;
 import it.nextworks.nfvmano.sebastian.catalogue.VsDescriptorCatalogueService;
 import it.nextworks.nfvmano.sebastian.catalogue.elements.ServiceConstraints;
@@ -123,14 +121,19 @@ public class BasicArbitrator extends AbstractArbitrator {
 			if (!nestedNsdIds.isEmpty()){
 
 				//Retrieve <DF, IL> from nsInitInfo
-				String instantiationLevelId = nsInitInfo.getInstantiationLevelId();
+                //BUGFIX:
+				//String instantiationLevelId = nsInitInfo.getInstantiationLevelId();
 				String deploymentFlavourID = nsInitInfo.getDeploymentFlavourId();
-				//Create NSIid sublist
-				existingNsiIds = new HashMap<>();
+                //Create NSIid sublist
+
+                existingNsiIds = new HashMap<>();
 				for(String nestedNsdId : nestedNsdIds) {
 					//Check existing NSI per id, tenant, IL, DF
-					List<NetworkSliceInstance> nsis = vsRecordService.getUsableSlices(tenantId, nestedNsdId, nsdVersion, deploymentFlavourID, instantiationLevelId);
-
+				    NsProfile nestedProfile = getNestedNsProfile(nsd, deploymentFlavourID, nestedNsdId );
+				    String nestedDf = nestedProfile.getNsDeploymentFlavourId();
+				    String nestedIl = nestedProfile.getNsInstantiationLevelId();
+                    //List<NetworkSliceInstance> nsis = vsRecordService.getUsableSlices(tenantId, nestedNsdId, nsdVersion, deploymentFlavourID, instantiationLevelId);
+                    List<NetworkSliceInstance> nsis = vsRecordService.getUsableSlices(tenantId, nestedNsdId, nsdVersion, nestedDf, nestedIl);
 					for (NetworkSliceInstance nsi : nsis) {
 						existingNsiIds.put(nsi.getNsiId(), false);
 						log.debug("Existing NSI found found: {}", nsi.getNsiId());
@@ -242,6 +245,18 @@ public class BasicArbitrator extends AbstractArbitrator {
 		}
 
 	}
+
+
+	private NsProfile getNestedNsProfile(Nsd compositeNsd, String compositeDf, String nestedNsdId) throws NotExistingEntityException {
+
+	    List<NsProfile> nsProfiles = compositeNsd.getNsDeploymentFlavour(compositeDf).getNsProfile();
+	    for(NsProfile nsProfile: nsProfiles){
+	        if(nsProfile.getNsdId()!=null && nsProfile.getNsdId().equals(nestedNsdId))
+	            return nsProfile;
+        }
+	    throw new NotExistingEntityException("Couldnt find Ns Profile for "+nestedNsdId+"in "+compositeNsd.getNsdIdentifier()+" "+compositeDf);
+
+    }
 
 }
 

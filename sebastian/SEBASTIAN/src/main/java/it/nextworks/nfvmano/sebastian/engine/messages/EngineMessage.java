@@ -36,6 +36,10 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 	@Type(value = TerminateNsiRequestMessage.class, 	name = "TERMINATE_NSI_REQUEST"),
 	@Type(value = NotifyNsiStatusChange.class, 	name = "NOTIFY_NSI_STATUS_CHANGE"),
 	@Type(value = NotifyNfvNsiStatusChange.class, 	name = "NOTIFY_NFV_NSI_STATUS_CHANGE"),
+		@Type(value = CoordinateVsiRequest.class, 	name = "COORDINATE_VSI_REQUEST"),
+		@Type(value = VsiTerminationNotificationMessage.class, 	name = "NOTIFY_TERMINATION"),
+		@Type(value = NotifyResourceGranted.class, 	name = "RESOURCES_GRANTED"),
+
 })
 public abstract class EngineMessage {
 

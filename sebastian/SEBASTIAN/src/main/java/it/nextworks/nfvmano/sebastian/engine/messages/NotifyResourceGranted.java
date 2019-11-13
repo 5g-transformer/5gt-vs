@@ -21,6 +21,10 @@ public class NotifyResourceGranted extends EngineMessage{
     @JsonProperty("vsiId")
     private String vsiId;
 
+    //Added for JSON serialization purposes
+    public NotifyResourceGranted(){
+
+    }
     /**
      *
      *

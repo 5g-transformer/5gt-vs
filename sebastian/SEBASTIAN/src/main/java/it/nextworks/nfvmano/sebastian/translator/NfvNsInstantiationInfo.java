@@ -21,7 +21,12 @@ public class NfvNsInstantiationInfo {
 	private String nsdVersion;
 	private String deploymentFlavourId;
 	private String instantiationLevelId;
-	
+
+
+	//Added for serialization purposes
+	public NfvNsInstantiationInfo(){
+
+	}
 	/**
 	 * Constructor
 	 * 
