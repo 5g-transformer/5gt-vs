@@ -535,7 +535,12 @@ function createVSBlueprintsTableContents(vsDescriptors,  params) {
 	}
 	
 	text += '</tbody>';
-	table.innerHTML += text;
+    table.innerHTML += text;
+    if (role != 'ADMIN') {
+        for (datum of data) {
+            setCallback(datum);
+        }
+    }
 }
 
 function createVSBlueprintDetailsTable(data, params) {
@@ -659,7 +664,7 @@ function createVSDescriptorModals(data, params) {
                         QoS Parameters\
                         </a >\
                         </h4>\
-                <div class="collapse in" id="parameters">';
+                <div id="parameters">';
     var paramNum = 0;
     for (var j in qos) {
         $.each(qos[j], function(key, val){
@@ -682,7 +687,7 @@ function createVSDescriptorModals(data, params) {
                 <a role="button" data-toggle="collapse" data-parent="#accordion" href="#more" aria-expanded="false" aria-controls="collapseOne">\
                   Slice Parameters\
                 </a ></h4>\
-            <div class="collapse" id="more"></br><div class="form-group">\
+            <div id="more"></br><div class="form-group">\
                 <label class="control-label col-md-3 col-sm-3 col-xs-12" for="last-name">Slice Service Type <!-- span class="required">*</span -->\
                 </label>\
                 <div class="col-md-6 col-sm-6 col-xs-12">\
@@ -716,7 +721,7 @@ function createVSDescriptorModals(data, params) {
                 <a role="button" data-toggle="collapse" data-parent="#accordion" href="#constraints" aria-expanded="false" aria-controls="collapseOne">\
                   Service constraints\
             </a ></h4>\
-            <div class="collapse" id="constraints"></br>\
+            <div  id="constraints"></br>\
                 <div class="form-group">\
                     <label class="control-label col-md-3 col-sm-3 col-xs-12" for="createVSD_' + vsbId +'_priority">Priority \
                     </label>\
@@ -771,7 +776,7 @@ function createVSDescriptorModals(data, params) {
                 <a role="button" data-toggle="collapse" data-parent="#accordion" href="#sla" aria-expanded="false" aria-controls="collapseOne">\
                   Sla requirements\
             </a></h4>\
-            <div class="collapse" id="sla"></br>\
+            <div id="sla"></br>\
                 <div class="form-group">\
                     <label class="control-label col-md-3 col-sm-3 col-xs-12" for="createVSD_' + vsbId + '_creation">Service creation time \
                     </label>\
@@ -806,12 +811,27 @@ function createVSDescriptorModals(data, params) {
     </div>\
     <div class="modal-footer">\
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal" onclick=clearForms("VSDForm_' + vsbId + '")>Cancel</button>\
-        <button type="submit" id="submitButton" class="btn btn-info" data-dismiss="modal">Submit</button>\
+        <button type="submit" id="submitButton_' + vsbId + '" class="btn btn-info" data-dismiss="modal">Submit</button>\
     </div></div></div></div>';
     
     div.innerHTML += text;
-    button = document.getElementById('submitButton');
+}
 
+function setCallback(datum) {
+    var vsbId = datum.vsBlueprintId;
+    var paramNum = datum.vsBlueprint.parameters.length
+    button = document.getElementById('submitButton_' + vsbId);
+
+    var cb = makeCallback(vsbId, paramNum);
+
+    button.addEventListener(
+        'click',
+        cb
+    );
+    //console.error(button.onclick);
+}
+
+function makeCallback(vsbId, paramNum) {
     var cb = function () {
         createVSDFromForm(
             [
@@ -834,13 +854,9 @@ function createVSDescriptorModals(data, params) {
                 "createVSD_" + vsbId + "_cost"
             ],
             paramNum
-        )
+        );
     }
-
-    button.addEventListener(
-        'click',
-        cb
-    )
+    return cb;
 }
 
 function createVSTopology(data){
